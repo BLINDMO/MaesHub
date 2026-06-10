@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Mae's Hub 🌈</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<div id="screen-home" class="screen active">
+  <div class="floaties" aria-hidden="true">
+    <span>☁️</span><span>🎈</span><span>☁️</span><span>🦋</span><span>⭐</span><span>☁️</span>
+  </div>
+  <h1 class="app-title"><span>🌈</span> Mae's Hub <span>🌈</span></h1>
+  <div class="menu-grid">
+    <button class="menu-card card-blocks" data-target="screen-blocks">
+      <span class="card-emoji">🧱</span><span class="card-label">Block Builder</span>
+    </button>
+    <button class="menu-card card-road" data-target="screen-road">
+      <span class="card-emoji">🐔</span><span class="card-label">Road Hopper</span>
+    </button>
+    <button class="menu-card card-eggs" data-target="screen-eggs">
+      <span class="card-emoji">🥚</span><span class="card-label">Egg Surprise</span>
+    </button>
+    <button class="menu-card card-garden" data-target="screen-garden">
+      <span class="card-emoji">🌸</span><span class="card-label">Magic Garden</span>
+    </button>
+    <button class="menu-card card-videos" data-target="screen-videos">
+      <span class="card-emoji">📺</span><span class="card-label">Mae's Videos</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ BLOCK BUILDER ============ -->
+<div id="screen-blocks" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>🧱 Block Builder</h2>
+    <button id="blocks-clear" class="btn-pill">Start Over 🧹</button>
+  </header>
+  <div id="build-area"></div>
+  <div id="trash-zone" aria-hidden="true">🗑️</div>
+  <div id="palette-bar">
+    <button id="blocks-draw-btn" class="palette-item draw-item" aria-label="Draw a new block">
+      <span class="draw-icon">🖍️</span><span class="draw-text">Draw!</span>
+    </button>
+    <div id="palette"></div>
+  </div>
+
+  <div id="draw-modal" class="overlay hidden">
+    <div class="modal-card">
+      <h3>🖍️ Draw your own block!</h3>
+      <canvas id="draw-canvas" width="320" height="320"></canvas>
+      <div id="draw-colors"></div>
+      <div class="modal-buttons">
+        <button id="draw-cancel" class="btn-pill btn-soft">Go Back</button>
+        <button id="draw-clear" class="btn-pill btn-soft">Wipe ✨</button>
+        <button id="draw-done" class="btn-pill btn-go">Make My Block! 🎉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ROAD HOPPER ============ -->
+<div id="screen-road" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>🐔 Road Hopper</h2>
+    <div id="road-hud"><span id="road-score">0</span> 🏅 <span id="road-best">0</span></div>
+  </header>
+  <canvas id="road-canvas"></canvas>
+  <div id="road-hint">Tap to hop! Tap the sides to step over 👣</div>
+
+  <div id="road-char-overlay" class="overlay">
+    <div class="modal-card">
+      <h3>Who wants to cross the road?</h3>
+      <div class="char-row">
+        <button class="char-btn" data-char="🐔">🐔</button>
+        <button class="char-btn" data-char="🐰">🐰</button>
+        <button class="char-btn" data-char="🦆">🦆</button>
+        <button class="char-btn" data-char="🐱">🐱</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="road-over-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <div class="big-emoji">💫</div>
+      <h3 id="road-over-text">Bonk! What a hop!</h3>
+      <p id="road-over-score"></p>
+      <div class="modal-buttons">
+        <button id="road-newchar" class="btn-pill btn-soft">New Friend 🐾</button>
+        <button id="road-retry" class="btn-pill btn-go">Hop Again! 🎉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EGG SURPRISE ============ -->
+<div id="screen-eggs" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>🥚 Egg Surprise</h2>
+    <div id="eggs-hud">🐥 <span id="eggs-found">0</span>/<span id="eggs-total">0</span></div>
+  </header>
+  <div id="eggs-field"></div>
+
+  <div id="eggs-start-overlay" class="overlay">
+    <div class="modal-card">
+      <div class="big-emoji">🥚🐺🥚</div>
+      <h3>A sneaky wolf is hiding in one egg!</h3>
+      <p>Find all the baby chicks… but watch out for the wolf!</p>
+      <button id="eggs-start" class="btn-pill btn-go btn-huge">Start! 🎉</button>
+    </div>
+  </div>
+
+  <div id="eggs-result-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <div id="eggs-result-emoji" class="big-emoji">🐺</div>
+      <h3 id="eggs-result-text"></h3>
+      <button id="eggs-again" class="btn-pill btn-go btn-huge">Play Again! 🥚</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAGIC GARDEN ============ -->
+<div id="screen-garden" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>🌸 Magic Garden</h2>
+    <div id="garden-hud">🌸 <span id="garden-flowers">0</span> &nbsp; 🦋 <span id="garden-butterflies">0</span></div>
+  </header>
+  <div id="garden-area">
+    <div id="garden-sun">🌞</div>
+    <div id="garden-rainbow" class="hidden">🌈</div>
+    <div id="garden-sky"></div>
+    <div id="garden-ground"></div>
+    <div id="garden-hint">Tap the grass to plant a magic seed! 🌱<br>Tap your plant to water it! 💧</div>
+  </div>
+  <button id="garden-reset" class="btn-pill">New Garden 🌱</button>
+</div>
+
+<!-- ============ VIDEOS ============ -->
+<div id="screen-videos" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>📺 Mae's Videos</h2>
+    <button id="videos-grownups-btn" class="btn-pill">Grown-Ups 🔒</button>
+  </header>
+  <div id="video-grid"></div>
+  <p id="videos-empty" class="hidden">No videos yet! Ask a grown-up to add some. 💜</p>
+
+  <div id="player-overlay" class="overlay hidden">
+    <div id="player-box">
+      <button id="player-close" aria-label="Close video">✖️</button>
+      <div id="player-frame"></div>
+    </div>
+  </div>
+
+  <div id="gate-modal" class="overlay hidden">
+    <div class="modal-card">
+      <h3>🔒 Grown-Ups Only</h3>
+      <p id="gate-question"></p>
+      <input id="gate-input" type="number" inputmode="numeric" placeholder="?">
+      <div class="modal-buttons">
+        <button id="gate-cancel" class="btn-pill btn-soft">Go Back</button>
+        <button id="gate-go" class="btn-pill btn-go">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="parent-panel" class="overlay hidden">
+    <div class="modal-card parent-card">
+      <h3>👋 Parent Settings</h3>
+
+      <section>
+        <h4>🚫 Blocked words</h4>
+        <p class="hint-text">Videos whose title or channel contains a blocked word will never be shown. (e.g. type “peppa pig”)</p>
+        <div class="input-row">
+          <input id="block-input" type="text" placeholder="word or phrase to block">
+          <button id="block-add" class="btn-pill btn-go">Block it</button>
+        </div>
+        <div id="block-chips"></div>
+      </section>
+
+      <section>
+        <h4>➕ Add a video</h4>
+        <p class="hint-text">Paste a YouTube link — the title is fetched automatically.</p>
+        <div class="input-row">
+          <input id="url-input" type="text" placeholder="https://www.youtube.com/watch?v=...">
+          <button id="video-add" class="btn-pill btn-go">Add</button>
+        </div>
+        <p id="add-status" class="hint-text"></p>
+      </section>
+
+      <section>
+        <h4>🎬 Video list</h4>
+        <div id="parent-video-list"></div>
+      </section>
+
+      <button id="parent-done" class="btn-pill btn-go btn-huge">Done ✅</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/confetti.js"></script>
+<script src="js/blocks.js"></script>
+<script src="js/road.js"></script>
+<script src="js/eggs.js"></script>
+<script src="js/garden.js"></script>
+<script src="js/videos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

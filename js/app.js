@@ -1,0 +1,39 @@
+/* ============ Mae's Hub — navigation ============ */
+(() => {
+  const modules = {
+    'screen-blocks': Blocks,
+    'screen-road': Road,
+    'screen-eggs': Eggs,
+    'screen-garden': Garden,
+    'screen-videos': Videos,
+  };
+  let current = 'screen-home';
+
+  function show(id) {
+    const old = modules[current];
+    if (old && old.stop) old.stop();
+    document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
+    current = id;
+    const mod = modules[id];
+    if (mod && mod.start) mod.start();
+  }
+
+  document.querySelectorAll('.menu-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      Sound.fanfare();
+      show(card.dataset.target);
+    });
+  });
+  document.querySelectorAll('.btn-back').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      Sound.click();
+      show('screen-home');
+    });
+  });
+
+  // block iOS pinch-zoom so little fingers can't break the layout
+  // (double-tap zoom is already disabled via touch-action: manipulation)
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+
+  Object.values(modules).forEach((m) => m.init && m.init());
+})();
