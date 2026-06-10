@@ -13,16 +13,37 @@ const Videos = (() => {
 
   // Starter videos — review & customize these in the Grown-Ups panel!
   const DEFAULT_VIDEOS = [
+    // PAW Patrol
+    { id: 'hc4hH7JMV_g', title: 'Pups and the Pirate Treasure 🏴‍☠️ Full Episode', channel: 'PAW Patrol Official & Friends' },
+    { id: 'w7G8cpBtFvQ', title: 'PAW Patrol Pups Meet a Baby Space Alien 👽 Full Episode', channel: 'Nick Jr.' },
+    { id: 'z1vXJVI2L5M', title: 'PAW Patrol Pups Save the Penguins 🐧 Full Episode', channel: 'Nick Jr.' },
+    { id: 'QqriVPsFnSo', title: 'Charger Joins the Rescue! PAW Patrol Compilation', channel: 'PAW Patrol Official & Friends' },
+    // Max & Ruby
+    { id: 'zM1HoTBzQDs', title: "Max and Ruby's Pirate Adventure — Full Episode", channel: 'Max & Ruby' },
+    { id: 'tHs3Dgufy2A', title: "Max the Champion / Ruby's Restaurant — Full Episode", channel: 'Max & Ruby' },
+    { id: 'pN0rSNkSUUI', title: "Max & Ruby's Museum Adventure — Full Episode", channel: 'Max & Ruby' },
+    { id: 'Q8vIdUehDvw', title: 'Max & Ruby — Episode 79 Full Episode', channel: 'Treehouse Direct' },
+    // Danny Go!
+    { id: '21XegpLrRjM', title: '"I Got That Rhythm!" Dance Song 🦊', channel: 'Danny Go!' },
+    { id: 'elk5PpYyF-M', title: '"Brand New Day!" ☀️ Wake Up Dance', channel: 'Danny Go!' },
+    { id: 'DsUPVERZFlI', title: '"The Wiggle Dance!" 🪱 Brain Break', channel: 'Danny Go!' },
+    { id: 'u-A3nCIvUGs', title: '"Bouncing Time!" Dance Song 🐰', channel: 'Danny Go!' },
+    // Bluey
+    { id: 'fWBJTdq_pdU', title: 'Cubby — Bluey Full Episode', channel: 'Disney Jr.' },
+    { id: 'cc9oLWrzQTc', title: 'Butterflies — Bluey Full Episode', channel: 'Disney Jr.' },
+    { id: 'MnzN6224I60', title: 'Bluey — Best of Season 1 Collection 🌟', channel: 'Bluey' },
+    // Gabby's Dollhouse
+    { id: 'HxkAWxAn76M', title: 'Gabby Takes Care of the Baby Kitties 🐱 Full Episode', channel: "Gabby's Dollhouse" },
+    { id: '8E4H1-_oMIs', title: 'Gabby Becomes a Fairy ✨ Full Episode', channel: "Gabby's Dollhouse" },
+    { id: 'A0lRuY3PA4s', title: 'Kitty Bear Tea Party 🎉 Full Episode', channel: "Gabby's Dollhouse" },
+    // Songs
     { id: 'XqZsoesa55w', title: 'Baby Shark Dance', channel: 'Pinkfong' },
     { id: 'e_04ZrNroTo', title: 'Wheels on the Bus', channel: 'CoComelon' },
     { id: 'yCjJyiqpAuU', title: 'Twinkle Twinkle Little Star', channel: 'Super Simple Songs' },
-    { id: '_6HzoUcx3eo', title: 'Old MacDonald Had A Farm', channel: 'Super Simple Songs' },
-    { id: 'l4WNrvVjiTw', title: "If You're Happy", channel: 'Super Simple Songs' },
-    { id: 'frN3nvhIHUk', title: 'Five Little Ducks', channel: 'Super Simple Songs' },
   ];
 
   let state = { custom: [], blocked: [], removedDefaults: [] };
-  let gateAnswer = null;
+  const PASSCODE = '0617';
 
   function load() {
     try {
@@ -80,22 +101,20 @@ const Videos = (() => {
   /* ----- grown-ups gate ----- */
   function openGate() {
     Sound.click();
-    const a = 11 + Math.floor(Math.random() * 9);
-    const b = 12 + Math.floor(Math.random() * 9);
-    gateAnswer = a + b;
-    document.getElementById('gate-question').textContent = `To prove you're a grown-up: what is ${a} + ${b}?`;
     document.getElementById('gate-input').value = '';
     document.getElementById('gate-modal').classList.remove('hidden');
     setTimeout(() => document.getElementById('gate-input').focus(), 100);
   }
 
   function tryGate() {
-    if (Number(document.getElementById('gate-input').value) === gateAnswer) {
+    const input = document.getElementById('gate-input');
+    if (input.value === PASSCODE) {
       document.getElementById('gate-modal').classList.add('hidden');
       openParentPanel();
     } else {
       Sound.bonk();
-      openGate(); // new question on a wrong answer
+      input.value = '';
+      input.focus();
     }
   }
 

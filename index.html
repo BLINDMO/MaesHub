@@ -43,8 +43,10 @@
     <h2>🧱 Block Builder</h2>
     <button id="blocks-clear" class="btn-pill">Start Over 🧹</button>
   </header>
-  <div id="build-area"></div>
-  <div id="trash-zone" aria-hidden="true">🗑️</div>
+  <div id="blocks-stage">
+    <canvas id="blocks-canvas"></canvas>
+    <div id="trash-zone" aria-hidden="true">🗑️</div>
+  </div>
   <div id="palette-bar">
     <button id="blocks-draw-btn" class="palette-item draw-item" aria-label="Draw a new block">
       <span class="draw-icon">🖍️</span><span class="draw-text">Draw!</span>
@@ -71,10 +73,10 @@
   <header class="game-header">
     <button class="btn-back" aria-label="Back">⬅️</button>
     <h2>🐔 Road Hopper</h2>
-    <div id="road-hud"><span id="road-score">0</span> 🏅 <span id="road-best">0</span></div>
+    <div id="road-hud">Level <span id="road-level">1</span> 🏅 <span id="road-best">0</span></div>
   </header>
   <canvas id="road-canvas"></canvas>
-  <div id="road-hint">Tap to hop! Tap the sides to step over 👣</div>
+  <div id="road-hint">Hop from START to the FINISH line! 🏁 Tap the sides to step over 👣</div>
 
   <div id="road-char-overlay" class="overlay">
     <div class="modal-card">
@@ -84,6 +86,18 @@
         <button class="char-btn" data-char="🐰">🐰</button>
         <button class="char-btn" data-char="🦆">🦆</button>
         <button class="char-btn" data-char="🐱">🐱</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="road-win-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <div class="big-emoji">🏁🎉</div>
+      <h3>You made it to the finish line!</h3>
+      <p id="road-win-text"></p>
+      <div class="modal-buttons">
+        <button id="road-win-newchar" class="btn-pill btn-soft">New Friend 🐾</button>
+        <button id="road-next" class="btn-pill btn-go btn-huge">Next Level ▶️</button>
       </div>
     </div>
   </div>
@@ -113,8 +127,8 @@
   <div id="eggs-start-overlay" class="overlay">
     <div class="modal-card">
       <div class="big-emoji">🥚🐺🥚</div>
-      <h3>A sneaky wolf is hiding in one egg!</h3>
-      <p>Find all the baby chicks… but watch out for the wolf!</p>
+      <h3>Watch out! A sneaky wolf wants to hide in the eggs!</h3>
+      <p>Find all the baby chicks… but don't open the wolf's egg!</p>
       <button id="eggs-start" class="btn-pill btn-go btn-huge">Start! 🎉</button>
     </div>
   </div>
@@ -140,7 +154,11 @@
     <div id="garden-rainbow" class="hidden">🌈</div>
     <div id="garden-sky"></div>
     <div id="garden-ground"></div>
-    <div id="garden-hint">Tap the grass to plant a magic seed! 🌱<br>Tap your plant to water it! 💧</div>
+    <div id="garden-hint">Pick the seeds 🌱 and tap the grass to plant!<br>Then pick the pail 🪣 and water your plant — it grows all by itself! ✨</div>
+    <div id="garden-tools">
+      <button class="tool-btn selected" data-tool="seed" aria-label="Seeds">🌱</button>
+      <button class="tool-btn" data-tool="water" aria-label="Water pail">🪣</button>
+    </div>
   </div>
   <button id="garden-reset" class="btn-pill">New Garden 🌱</button>
 </div>
@@ -165,8 +183,8 @@
   <div id="gate-modal" class="overlay hidden">
     <div class="modal-card">
       <h3>🔒 Grown-Ups Only</h3>
-      <p id="gate-question"></p>
-      <input id="gate-input" type="number" inputmode="numeric" placeholder="?">
+      <p id="gate-question">Enter the parent passcode 🔑</p>
+      <input id="gate-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
       <div class="modal-buttons">
         <button id="gate-cancel" class="btn-pill btn-soft">Go Back</button>
         <button id="gate-go" class="btn-pill btn-go">Unlock</button>
@@ -208,6 +226,7 @@
   </div>
 </div>
 
+<script src="js/vendor/matter.min.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/confetti.js"></script>
 <script src="js/blocks.js"></script>

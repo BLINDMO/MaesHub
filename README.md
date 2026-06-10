@@ -22,37 +22,44 @@ full-screen like a real app.
 
 ## What's inside
 
-### 🧱 Block Builder
-Tap blocks in the bottom palette to drop them into the play area, then drag
-them to build. The **Draw!** crayon button opens a drawing pad — whatever Mae
-draws is automatically cropped and turned into a brand-new block in her
-palette that she can use to build. Drag blocks onto the trash can to remove
+### 🧱 Block Builder (real physics!)
+Powered by the Matter.js physics engine (vendored, works offline). Tap a
+palette block and it drops from the sky, lands, and stacks — build a tower!
+Drag blocks around with a finger and they stay physical. The **Draw!**
+crayon button opens a drawing pad — whatever Mae draws becomes a real
+physics block that drops in too. Drag blocks onto the trash can to remove
 them.
 
 ### 🐔 Road Hopper
-A gentle Crossy-Road-style game. Pick a character (chicken, bunny, duck or
-kitty), then tap to hop forward across the traffic; tap the left/right edges
-of the screen to sidestep. Arrow keys work too. Forgiving hitboxes, slow
-starter cars, and a best-score counter.
+A structured lane-crossing course: hop from the **START** line at the
+bottom to the checkered **FINISH** line at the top — the whole course fits
+on one screen. Lanes alternate direction with evenly spaced cars, and each
+finished crossing unlocks a slightly busier level. Pick a character
+(chicken, bunny, duck or kitty); tap to hop forward, tap the screen edges
+to sidestep.
 
 ### 🥚 Egg Surprise
-Press Start and a sneaky wolf hides in one of ten eggs scattered around the
-screen. Open eggs to find the baby chicks — find all nine chicks **without**
-opening the wolf's egg to win confetti!
+Press Start: 25 colorful eggs pile up in the middle, the wolf trots in,
+**dives into the pile**, and the eggs scatter all over the screen. Open
+eggs to find all 24 baby chicks — without opening the wolf's egg!
 
 ### 🌸 Magic Garden
-A no-fail sandbox: tap the grass to plant magic seeds, tap a plant to water
-it and watch it grow into a surprise flower. Flowers attract butterflies,
-bees and ladybugs to catch for sparkles, and growing six flowers earns a
-rainbow celebration.
+Two tools: seeds 🌱 and the water pail 🪣. Plant seeds in the grass, then
+switch to the pail and water them — each plant grows on its own over 20
+seconds (sprout → leaves → bud) until it blooms into a big, glowing,
+swaying flower. Blooms attract butterflies to catch, and five flowers earn
+a rainbow. No way to lose.
 
 ### 📺 Mae's Videos
 A curated YouTube grid. Kids only see approved videos; playback uses the
 privacy-enhanced `youtube-nocookie.com` embed with related videos limited to
 the same channel.
 
-**Grown-Ups panel** (the 🔒 button, protected by a math question a
-four-year-old can't answer):
+Comes preloaded with PAW Patrol, Max & Ruby, Danny Go!, Bluey and Gabby's
+Dollhouse episodes plus a few songs.
+
+**Grown-Ups panel** (the 🔒 button, protected by a 4-digit parent
+passcode — change it via `PASSCODE` at the top of `js/videos.js`):
 
 - **Blocked words** — add words/phrases like `peppa pig`; any video whose
   title or channel matches is never shown in Mae's grid, even if someone
@@ -64,11 +71,11 @@ four-year-old can't answer):
 Everything (video list, blocked words, high scores) is saved in the
 browser's local storage on the device.
 
-> ⚠️ The starter video list contains a few well-known kids' songs as
-> placeholders. Please review them in the Grown-Ups panel on first run and
-> swap in your own favorites — and note that YouTube's player UI itself
-> (end-screen suggestions from the same channel) can't be filtered by the
-> blocklist, only the in-app grid can.
+> ⚠️ Review the starter videos in the Grown-Ups panel on first run — if
+> one ever shows a gray thumbnail or won't play (videos do get taken down),
+> just remove it and paste a fresh link. Note that YouTube's player UI
+> itself (end-screen suggestions from the same channel) can't be filtered
+> by the blocklist, only the in-app grid can.
 
 ## Project layout
 

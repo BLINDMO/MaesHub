@@ -1,29 +1,44 @@
 /* ============ Game 4: Magic Garden ============
- * A no-fail sandbox made for a four-year-old: tap the grass to plant seeds,
- * tap a plant to water it and watch it grow into a surprise flower.
- * Blooming flowers attract butterflies she can catch for sparkles, and a
- * big garden earns a rainbow. There is no way to lose — only ways to play.
+ * Two tools: seeds 🌱 and the water pail 🪣. Pick the seeds and tap the
+ * grass to plant; then pick the pail and tap a plant to water it. Watered
+ * plants grow on their own over 20 seconds — sprout, leaves, bud — until
+ * they bloom into a big beautiful flower. Blooms attract butterflies to
+ * catch, and a full garden earns a rainbow. No way to lose!
  */
 const Garden = (() => {
   const FLOWERS = ['🌸', '🌷', '🌻', '🌼', '🌺', '🪻', '🌹'];
   const BUTTERFLIES = ['🦋', '🐝', '🐞'];
-  const MAX_PLANTS = 14;
+  const MAX_PLANTS = 10;
+  const GROW_SECONDS = 20;
+  // emoji shown along the way: planted → watered stages → final flower
+  const STAGES = ['🌱', '🌿', '🪴', '🌷'];
 
   let area, ground;
+  let tool = 'seed';
   let plants = [];
   let critters = [];
   let flowerCount = 0;
   let butterflyCount = 0;
-  let rafId = null;
-  let lastTime = 0;
-  let active = false;
+  let rafId = null, lastTime = 0, active = false;
+  let timers = [];
 
   function init() {
     area = document.getElementById('garden-area');
     ground = document.getElementById('garden-ground');
+
+    document.querySelectorAll('.tool-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        Sound.click();
+        tool = btn.dataset.tool;
+        document.querySelectorAll('.tool-btn').forEach((b) => b.classList.toggle('selected', b === btn));
+        area.classList.toggle('watering', tool === 'water');
+      });
+    });
+
     ground.addEventListener('pointerdown', (e) => {
       if (e.target !== ground) return;
-      plantSeed(e);
+      if (tool === 'seed') plantSeed(e);
+      else Sound.splash(); // splashing water on empty grass is still fun
     });
     document.getElementById('garden-reset').addEventListener('click', () => {
       Sound.pop();
@@ -43,7 +58,11 @@ const Garden = (() => {
     rafId = null;
   }
 
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
   function resetGarden() {
+    timers.forEach(clearTimeout);
+    timers = [];
     plants.forEach((p) => p.el.remove());
     critters.forEach((c) => c.el.remove());
     plants = [];
@@ -62,43 +81,55 @@ const Garden = (() => {
     const r = area.getBoundingClientRect();
     const el = document.createElement('button');
     el.className = 'plant';
-    el.textContent = '🌱';
+    el.textContent = STAGES[0];
     el.style.left = (e.clientX - r.left) + 'px';
     el.style.top = (e.clientY - r.top) + 'px';
-    const plant = { el, stage: 0, busy: false };
+    const plant = { el, growing: false, bloomed: false };
     el.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
-      waterPlant(plant);
+      tapPlant(plant);
     });
     area.appendChild(el);
     plants.push(plant);
   }
 
-  function waterPlant(plant) {
-    if (plant.busy || plant.stage >= 2) {
-      if (plant.stage >= 2) sparkleBurst(plant.el, 4); // blooms still sparkle when patted
-      return;
-    }
-    plant.busy = true;
+  function tapPlant(plant) {
+    if (plant.bloomed) { Sound.sparkle(); sparkleBurst(plant.el, 5); return; }
+    if (tool !== 'water') { Sound.click(); wobble(plant.el); return; }
+    if (plant.growing) { Sound.splash(); rainDroplets(plant.el); return; }
+
+    // one watering starts the 20-second magic grow
+    plant.growing = true;
     Sound.splash();
     rainDroplets(plant.el);
-    setTimeout(() => {
-      plant.stage++;
-      plant.busy = false;
-      if (plant.stage === 1) {
-        plant.el.textContent = '🌿';
-        plant.el.classList.add('stage-1');
-      } else {
-        plant.el.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
-        plant.el.classList.add('stage-2');
-        Sound.sparkle();
-        sparkleBurst(plant.el, 8);
-        flowerCount++;
-        updateHud();
-        maybeCelebrate();
-        maybeSpawnButterfly();
-      }
-    }, 750);
+    const stepMs = (GROW_SECONDS * 1000) / (STAGES.length);
+    for (let s = 1; s < STAGES.length; s++) {
+      later(() => {
+        plant.el.textContent = STAGES[s];
+        plant.el.classList.add('stage-' + s);
+        rainDroplets(plant.el);
+        Sound.pop();
+      }, stepMs * s);
+    }
+    later(() => bloom(plant), GROW_SECONDS * 1000);
+  }
+
+  function bloom(plant) {
+    plant.bloomed = true;
+    plant.el.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
+    plant.el.classList.add('bloomed');
+    Sound.fanfare();
+    sparkleBurst(plant.el, 10);
+    flowerCount++;
+    updateHud();
+    maybeCelebrate();
+    maybeSpawnButterfly();
+  }
+
+  function wobble(el) {
+    el.classList.remove('wiggle');
+    void el.offsetWidth; // restart the animation
+    el.classList.add('wiggle');
   }
 
   function rainDroplets(el) {
@@ -107,7 +138,7 @@ const Garden = (() => {
       d.className = 'droplet';
       d.textContent = '💧';
       d.style.left = (el.offsetLeft + (i - 1) * 18) + 'px';
-      d.style.top = (el.offsetTop - 40) + 'px';
+      d.style.top = (el.offsetTop - 50) + 'px';
       d.style.animationDelay = i * 0.1 + 's';
       area.appendChild(d);
       setTimeout(() => d.remove(), 1100);
@@ -120,17 +151,17 @@ const Garden = (() => {
       s.className = 'sparkle';
       s.textContent = ['✨', '⭐', '💖'][i % 3];
       const ang = (i / n) * Math.PI * 2;
-      s.style.setProperty('--dx', Math.cos(ang) * 60 + 'px');
-      s.style.setProperty('--dy', Math.sin(ang) * 60 - 30 + 'px');
+      s.style.setProperty('--dx', Math.cos(ang) * 70 + 'px');
+      s.style.setProperty('--dy', Math.sin(ang) * 70 - 30 + 'px');
       s.style.left = el.offsetLeft + 'px';
-      s.style.top = (el.offsetTop - 30) + 'px';
+      s.style.top = (el.offsetTop - 40) + 'px';
       area.appendChild(s);
       setTimeout(() => s.remove(), 1000);
     }
   }
 
   function maybeCelebrate() {
-    if (flowerCount === 6) {
+    if (flowerCount === 5) {
       document.getElementById('garden-rainbow').classList.remove('hidden');
       Sound.fanfare();
       throwConfetti(140);
@@ -165,8 +196,7 @@ const Garden = (() => {
     critters = critters.filter((c) => c !== critter);
     butterflyCount++;
     updateHud();
-    // a new friend flutters in a little later
-    setTimeout(() => { if (active && flowerCount > 0) maybeSpawnButterfly(); }, 2500 + Math.random() * 3000);
+    later(() => { if (active && flowerCount > 0) maybeSpawnButterfly(); }, 2500 + Math.random() * 3000);
   }
 
   function flutterLoop(now) {

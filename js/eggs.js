@@ -1,13 +1,17 @@
 /* ============ Game 3: Egg Surprise ============
- * Press start and a sneaky wolf hides inside one of the eggs scattered
- * around the screen. Open eggs to find all the baby chicks — open every
- * egg EXCEPT the wolf's and you win!
+ * Press Start: 25 colorful eggs sit piled in the middle of the screen,
+ * the wolf trots in from the side, DIVES into the pile, and the eggs
+ * scatter everywhere. Open eggs to find all 24 baby chicks — but don't
+ * open the one the wolf is hiding in!
  */
 const Eggs = (() => {
-  const TOTAL = 10;
+  const TOTAL = 25;
   const CHICKS = ['🐣', '🐥', '🐤'];
+  const COLOR_CLASSES = 8;   // egg-c0..c7 in the stylesheet
+  const PATTERN_CLASSES = 3; // egg-p0..p2
 
-  let field, opened, wolfIndex, finished;
+  let field, opened, wolfIndex, finished, accepting;
+  let timers = [];
 
   function init() {
     field = document.getElementById('eggs-field');
@@ -24,6 +28,7 @@ const Eggs = (() => {
   }
 
   function start() {
+    clearTimers();
     field.innerHTML = '';
     document.getElementById('eggs-start-overlay').classList.remove('hidden');
     document.getElementById('eggs-result-overlay').classList.add('hidden');
@@ -31,36 +36,83 @@ const Eggs = (() => {
     document.getElementById('eggs-total').textContent = TOTAL - 1;
   }
 
+  function stop() { clearTimers(); }
+
+  function clearTimers() {
+    timers.forEach(clearTimeout);
+    timers = [];
+  }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
   function newRound() {
+    clearTimers();
     field.innerHTML = '';
     opened = 0;
     finished = false;
+    accepting = false; // no peeking until the wolf has hidden!
     wolfIndex = Math.floor(Math.random() * TOTAL);
     document.getElementById('eggs-found').textContent = 0;
     document.getElementById('eggs-total').textContent = TOTAL - 1;
 
     const spots = scatter(TOTAL);
-    spots.forEach((pos, i) => {
+    const eggs = [];
+    for (let i = 0; i < TOTAL; i++) {
       const egg = document.createElement('button');
-      egg.className = 'egg';
-      egg.textContent = '🥚';
-      egg.style.left = pos.x + '%';
-      egg.style.top = pos.y + '%';
-      egg.style.rotate = (Math.random() * 24 - 12) + 'deg';
+      egg.className = `egg egg-c${i % COLOR_CLASSES} egg-p${(i * 7 + 3) % PATTERN_CLASSES}`;
+      // start piled in the middle of the screen
+      egg.style.left = 50 + (Math.random() - 0.5) * 14 + '%';
+      egg.style.top = 50 + (Math.random() - 0.5) * 16 + '%';
+      egg.style.rotate = (Math.random() * 40 - 20) + 'deg';
       egg.addEventListener('click', () => openEgg(egg, i), { once: true });
       field.appendChild(egg);
+      eggs.push(egg);
+    }
+
+    // the wolf trots in...
+    const wolf = document.createElement('div');
+    wolf.id = 'eggs-wolf';
+    wolf.textContent = '🐺';
+    wolf.style.left = '-12%';
+    wolf.style.top = '50%';
+    field.appendChild(wolf);
+    requestAnimationFrame(() => {
+      wolf.classList.add('walking');
+      wolf.style.left = '46%';
     });
+
+    // ...dives into the pile...
+    later(() => {
+      wolf.classList.remove('walking');
+      wolf.classList.add('diving');
+      Sound.growl();
+    }, 2600);
+
+    // ...and the eggs scatter everywhere!
+    later(() => {
+      wolf.remove();
+      Sound.pop();
+      eggs.forEach((egg, i) => {
+        egg.style.transitionDelay = (Math.random() * 0.35) + 's';
+        egg.style.left = spots[i].x + '%';
+        egg.style.top = spots[i].y + '%';
+        egg.style.rotate = (Math.random() * 36 - 18) + 'deg';
+      });
+    }, 3400);
+
+    later(() => {
+      eggs.forEach((egg) => { egg.style.transitionDelay = '0s'; });
+      accepting = true;
+    }, 4500);
   }
 
   function scatter(n) {
-    // random spots that keep a friendly distance from each other
-    const w = field.clientWidth, h = field.clientHeight;
-    const minDist = Math.min(w, h) / 4.2;
+    const w = field.clientWidth || 800, h = field.clientHeight || 600;
+    const minDist = Math.sqrt((w * h) / n) * 0.62;
     const spots = [];
     for (let i = 0; i < n; i++) {
       let best = null, bestScore = -1;
-      for (let attempt = 0; attempt < 40; attempt++) {
-        const p = { x: 10 + Math.random() * 80, y: 14 + Math.random() * 72 };
+      for (let attempt = 0; attempt < 60; attempt++) {
+        const p = { x: 7 + Math.random() * 86, y: 10 + Math.random() * 80 };
         const px = (p.x / 100) * w, py = (p.y / 100) * h;
         let nearest = Infinity;
         for (const s of spots) {
@@ -76,10 +128,10 @@ const Eggs = (() => {
   }
 
   function openEgg(egg, i) {
-    if (finished) return;
+    if (finished || !accepting) return;
     egg.classList.add('wiggle');
     Sound.pop();
-    setTimeout(() => {
+    later(() => {
       if (finished) return;
       egg.classList.remove('wiggle');
       egg.classList.add('opened');
@@ -88,7 +140,7 @@ const Eggs = (() => {
         egg.textContent = '🐺';
         Sound.growl();
         finished = true;
-        setTimeout(() => showResult(false), 700);
+        later(() => showResult(false), 700);
       } else {
         egg.textContent = CHICKS[Math.floor(Math.random() * CHICKS.length)];
         Sound.chirp();
@@ -96,14 +148,13 @@ const Eggs = (() => {
         document.getElementById('eggs-found').textContent = opened;
         if (opened === TOTAL - 1) {
           finished = true;
-          // reveal the wolf's egg with a relieved giggle
           field.querySelectorAll('.egg:not(.opened)').forEach((e) => {
-            e.classList.add('wiggle');
+            e.classList.add('wiggle', 'opened');
             e.textContent = '🐺';
           });
           Sound.fanfare();
-          throwConfetti(140);
-          setTimeout(() => showResult(true), 900);
+          throwConfetti(160);
+          later(() => showResult(true), 900);
         }
       }
     }, 420);
@@ -113,10 +164,10 @@ const Eggs = (() => {
     const overlay = document.getElementById('eggs-result-overlay');
     document.getElementById('eggs-result-emoji').textContent = won ? '🐥🎉🐥' : '🐺';
     document.getElementById('eggs-result-text').textContent = won
-      ? 'You found ALL the chicks and dodged the wolf! Amazing!'
+      ? 'You found ALL 24 chicks and dodged the wolf! Amazing!'
       : 'Aaooo! The wolf was hiding in that one! Try again!';
     overlay.classList.remove('hidden');
   }
 
-  return { init, start };
+  return { init, start, stop };
 })();
