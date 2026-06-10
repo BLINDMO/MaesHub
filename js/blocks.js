@@ -6,7 +6,7 @@
  * physics block that drops in too.
  */
 const Blocks = (() => {
-  const { Engine, Composite, Bodies, Mouse, MouseConstraint, Events } = Matter;
+  const { Engine, Composite, Bodies, Body, Sleeping, Mouse, MouseConstraint, Events } = Matter;
 
   const CRAYON_COLORS = ['#ff5fa2', '#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#9775fa', '#5b3a70'];
   const MAX_BODIES = 60;
@@ -45,9 +45,12 @@ const Blocks = (() => {
   }
 
   const PHYS = { friction: 0.9, frictionStatic: 1.2, restitution: 0.05, density: 0.002 };
+  // blocks can't be spun by physics — they stay square so stacking is easy;
+  // a quick tap rotates them 90° instead (balls are exempt so they still roll)
+  const LOCKED = { ...PHYS, inertia: Infinity };
 
   function box(x, y, w, h, color, stroke) {
-    const b = Bodies.rectangle(x, y, w, h, { ...PHYS, chamfer: { radius: Math.min(10, w / 4, h / 4) } });
+    const b = Bodies.rectangle(x, y, w, h, { ...LOCKED, chamfer: { radius: Math.min(10, w / 4, h / 4) } });
     b.plugin.draw = { kind: 'rect', w, h, color, stroke };
     return b;
   }
@@ -58,14 +61,14 @@ const Blocks = (() => {
   }
   function triangle(x, y, w, h, color, stroke) {
     const verts = [{ x: 0, y: -h / 2 }, { x: w / 2, y: h / 2 }, { x: -w / 2, y: h / 2 }];
-    const b = Bodies.fromVertices(x, y, [verts], { ...PHYS });
+    const b = Bodies.fromVertices(x, y, [verts], { ...LOCKED });
     // fromVertices centers the body on its centroid, not the bounding box
     b.plugin.draw = { kind: 'tri', w, h, color, stroke, cy: h / 6 };
     return b;
   }
   function star(x, y, r, color, stroke) {
     // a chunky pentagon body wearing a star costume — close enough for toddler physics
-    const b = Bodies.polygon(x, y, 5, r * 0.72, { ...PHYS });
+    const b = Bodies.polygon(x, y, 5, r * 0.72, { ...LOCKED });
     b.plugin.draw = { kind: 'star', r, color, stroke };
     return b;
   }
@@ -76,7 +79,7 @@ const Blocks = (() => {
       { x: 20, y: -32 }, { x: 36, y: -16 }, { x: 34, y: 4 },
     ].map((p) => ({ x: p.x * scale, y: p.y * scale }));
     const c = polyCentroid(pts);
-    const b = Bodies.fromVertices(x, y, [pts], { ...PHYS });
+    const b = Bodies.fromVertices(x, y, [pts], { ...LOCKED });
     b.plugin.draw = { kind: 'heart', scale, color, stroke, cx: c.x, cy: c.y };
     return b;
   }
@@ -93,7 +96,7 @@ const Blocks = (() => {
     return { x: cx / (6 * a), y: cy / (6 * a) };
   }
   function imageBlock(x, y, img, w, h) {
-    const b = Bodies.rectangle(x, y, w, h, { ...PHYS, chamfer: { radius: 6 } });
+    const b = Bodies.rectangle(x, y, w, h, { ...LOCKED, chamfer: { radius: 6 } });
     b.plugin.draw = { kind: 'img', img, w, h };
     return b;
   }
@@ -181,16 +184,35 @@ const Blocks = (() => {
     });
     Composite.add(world, mouseConstraint);
 
-    Events.on(mouseConstraint, 'startdrag', () => Sound.click());
+    // a quick tap on a block (not a drag) rotates it 90°
+    let grab = null;
+    Events.on(mouseConstraint, 'startdrag', (e) => {
+      Sound.click();
+      grab = {
+        body: e.body,
+        time: performance.now(),
+        x: mouseConstraint.mouse.position.x,
+        y: mouseConstraint.mouse.position.y,
+      };
+    });
     Events.on(mouseConstraint, 'enddrag', (e) => {
       const t = trash.getBoundingClientRect();
       const c = canvas.getBoundingClientRect();
-      const mx = mouseConstraint.mouse.position.x + c.left;
-      const my = mouseConstraint.mouse.position.y + c.top;
+      const pos = mouseConstraint.mouse.position;
+      const mx = pos.x + c.left;
+      const my = pos.y + c.top;
       if (mx > t.left - 10 && mx < t.right + 10 && my > t.top - 10 && my < t.bottom + 10) {
         Sound.splash();
         Composite.remove(world, e.body);
+      } else if (
+        grab && grab.body === e.body &&
+        performance.now() - grab.time < 280 &&
+        Math.hypot(pos.x - grab.x, pos.y - grab.y) < 14 &&
+        e.body.plugin.draw && e.body.plugin.draw.kind !== 'circle'
+      ) {
+        rotateBlock(e.body);
       }
+      grab = null;
       trash.classList.remove('hot');
     });
   }
@@ -206,6 +228,15 @@ const Blocks = (() => {
       Bodies.rectangle(w + 30, h / 2, 60, h * 4, { isStatic: true }),
     ];
     Composite.add(world, statics);
+  }
+
+  function rotateBlock(b) {
+    Sound.hop();
+    // snap to the next quarter turn so blocks always stay square
+    const quarter = Math.PI / 2;
+    Body.setAngle(b, Math.round(b.angle / quarter) * quarter + quarter);
+    Body.setAngularVelocity(b, 0);
+    Sleeping.set(b, false);
   }
 
   function spawn(make) {
