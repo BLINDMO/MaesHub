@@ -138,14 +138,45 @@ const Videos = (() => {
     playlist = favs.concat(picks, others).map((v) => v.id);
   }
 
+  /* Playback uses the YouTube IFrame API when it loads (so we can detect
+   * "video ended" and auto-play the next one), with a plain embed as a
+   * fallback. Standard youtube.com host: if the browser is signed in to
+   * YouTube (e.g. a Premium account), the embeds can use that session. */
+  let ytPlayer = null;
+
+  function loadYTApi() {
+    if (window.YT || document.getElementById('yt-api')) return;
+    const tag = document.createElement('script');
+    tag.id = 'yt-api';
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  }
+
   function play(id) {
     Sound.click();
     nowPlaying = id;
-    const frame = document.getElementById('player-frame');
-    frame.innerHTML = `<iframe
-      src="https://www.youtube-nocookie.com/embed/${id}?rel=0&autoplay=1&playsinline=1"
-      title="video player" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
     document.getElementById('player-overlay').classList.remove('hidden');
+    const frame = document.getElementById('player-frame');
+    if (window.YT && window.YT.Player) {
+      if (ytPlayer) {
+        ytPlayer.loadVideoById(id);
+        return;
+      }
+      frame.innerHTML = '<div id="yt-player"></div>';
+      ytPlayer = new YT.Player('yt-player', {
+        videoId: id,
+        playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
+        events: {
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.ENDED) playNext();
+          },
+        },
+      });
+    } else {
+      frame.innerHTML = `<iframe
+        src="https://www.youtube.com/embed/${id}?rel=0&autoplay=1&playsinline=1"
+        title="video player" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
+    }
   }
 
   function playNext() {
@@ -156,27 +187,32 @@ const Videos = (() => {
   }
 
   function closePlayer() {
+    if (ytPlayer) {
+      try { ytPlayer.destroy(); } catch (e) { /* already gone */ }
+      ytPlayer = null;
+    }
     document.getElementById('player-frame').innerHTML = '';
     document.getElementById('player-overlay').classList.add('hidden');
   }
 
   /* ----- grown-ups gate ----- */
+  let gatePad = null;
+
   function openGate() {
     Sound.click();
-    document.getElementById('gate-input').value = '';
+    if (gatePad) gatePad.reset();
     document.getElementById('gate-modal').classList.remove('hidden');
-    setTimeout(() => document.getElementById('gate-input').focus(), 100);
   }
 
-  function tryGate() {
-    const input = document.getElementById('gate-input');
-    if (input.value === PASSCODE) {
+  function onGateCode(code, pad) {
+    if (code === PASSCODE) {
+      pad.reset();
       document.getElementById('gate-modal').classList.add('hidden');
       openParentPanel();
     } else {
       Sound.bonk();
-      input.value = '';
-      input.focus();
+      pad.shake();
+      pad.reset();
     }
   }
 
@@ -291,11 +327,12 @@ const Videos = (() => {
   /* ----- wiring ----- */
   function init() {
     load();
+    loadYTApi();
     document.getElementById('player-close').addEventListener('click', closePlayer);
     document.getElementById('player-next').addEventListener('click', playNext);
     document.getElementById('videos-grownups-btn').addEventListener('click', openGate);
-    document.getElementById('gate-go').addEventListener('click', tryGate);
-    document.getElementById('gate-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryGate(); });
+    gatePad = Keypad.create(onGateCode);
+    document.getElementById('gate-pad').appendChild(gatePad.el);
     document.getElementById('gate-cancel').addEventListener('click', () => document.getElementById('gate-modal').classList.add('hidden'));
     document.getElementById('block-add').addEventListener('click', addBlockedWord);
     document.getElementById('block-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addBlockedWord(); });

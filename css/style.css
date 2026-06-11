@@ -37,7 +37,12 @@ html, body {
 }
 .screen.active { display: flex; }
 
-#screen-home   { background: linear-gradient(160deg, #ffe3f1 0%, #e3f0ff 55%, #fff9d9 100%); }
+#screen-home {
+  background: linear-gradient(160deg, #ffd9ec 0%, #d9e8ff 45%, #fdf2d8 100%);
+  background-size: 170% 170%;
+  animation: bgShift 16s ease-in-out infinite alternate;
+}
+@keyframes bgShift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
 #screen-blocks { background: linear-gradient(180deg, #e3f7ff 0%, #fdf3ff 100%); }
 #screen-road   { background: #87d37c; }
 #screen-eggs   { background: linear-gradient(180deg, #fff6dc 0%, #ffe9c9 100%); }
@@ -75,28 +80,64 @@ html, body {
 }
 
 .menu-card {
-  border: none;
-  border-radius: 28px;
-  padding: clamp(14px, 3vh, 30px) 10px;
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 26px;
+  padding: clamp(12px, 2.6vh, 24px) 10px;
   font-family: inherit;
-  font-size: clamp(1rem, 2.6vw, 1.5rem);
-  font-weight: 700;
+  font-size: clamp(0.95rem, 2.4vw, 1.35rem);
   color: #fff;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.12s;
+  gap: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 16px 26px -10px var(--glow, rgba(60, 30, 90, 0.45)),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: cardIn 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) backwards;
 }
-.menu-card:active { transform: scale(0.93) rotate(-1deg); }
-.card-emoji { font-size: clamp(2.4rem, 7vw, 4.2rem); filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2)); }
-.card-blocks { background: linear-gradient(145deg, #ff8a65, #ff5252); }
-.card-road   { background: linear-gradient(145deg, #66bb6a, #2e9e46); }
-.card-eggs   { background: linear-gradient(145deg, #ffca28, #ff9800); }
-.card-garden { background: linear-gradient(145deg, #f06292, #c2185b); }
-.card-videos { background: linear-gradient(145deg, #7e57c2, #512da8); }
+.menu-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 58% 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.02));
+  border-radius: 24px 24px 50% 50%;
+  pointer-events: none;
+}
+.menu-card:active { transform: scale(0.94); box-shadow: 0 8px 16px -8px var(--glow, rgba(60, 30, 90, 0.45)), inset 0 2px 0 rgba(255,255,255,0.5); }
+.menu-card:nth-child(1) { animation-delay: 0.03s; }
+.menu-card:nth-child(2) { animation-delay: 0.08s; }
+.menu-card:nth-child(3) { animation-delay: 0.13s; }
+.menu-card:nth-child(4) { animation-delay: 0.18s; }
+.menu-card:nth-child(5) { animation-delay: 0.23s; }
+.menu-card:nth-child(6) { animation-delay: 0.28s; }
+.menu-card:nth-child(7) { animation-delay: 0.33s; }
+.menu-card:nth-child(8) { animation-delay: 0.38s; }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.card-emoji {
+  width: clamp(60px, 10vw, 88px);
+  height: clamp(60px, 10vw, 88px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.9rem, 5.6vw, 3.2rem);
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+.card-label { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25); }
+.card-blocks  { background: linear-gradient(150deg, #ff9a76, #f4504c); --glow: rgba(244, 80, 76, 0.5); }
+.card-road    { background: linear-gradient(150deg, #6ed873, #2e9e46); --glow: rgba(46, 158, 70, 0.5); }
+.card-eggs    { background: linear-gradient(150deg, #ffd24d, #f59300); --glow: rgba(245, 147, 0, 0.5); }
+.card-garden  { background: linear-gradient(150deg, #f771a8, #cf2069); --glow: rgba(207, 32, 105, 0.5); }
+.card-videos  { background: linear-gradient(150deg, #9a7af0, #5b2bbf); --glow: rgba(91, 43, 191, 0.5); }
 
 .floaties { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .floaties span {
@@ -362,25 +403,11 @@ html, body {
   cursor: default;
 }
 
-#eggs-wolf {
-  position: absolute;
-  font-size: 4.5rem;
-  transform: translate(-50%, -50%) scaleX(-1); /* face the direction he walks */
-  transition: left 2.4s ease-in-out;
-  filter: drop-shadow(0 6px 6px rgba(0,0,0,0.25));
-  z-index: 5;
-  pointer-events: none;
-}
-#eggs-wolf.walking { animation: waddle 0.4s ease-in-out infinite; }
-#eggs-wolf.diving { animation: dive 0.8s ease-in forwards; }
-@keyframes waddle {
-  0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(-7deg); }
-  50% { transform: translate(-50%, -56%) scaleX(-1) rotate(7deg); }
-}
-@keyframes dive {
-  0% { transform: translate(-50%, -50%) scaleX(-1) rotate(0); opacity: 1; }
-  40% { transform: translate(-50%, -130%) scaleX(-1) rotate(-160deg) scale(1.1); opacity: 1; }
-  100% { transform: translate(-50%, -10%) scaleX(-1) rotate(-360deg) scale(0.15); opacity: 0; }
+/* the wolf SVG faces right, the same direction he walks — no flipping */
+#eggs-wolf.walking { animation: trot 0.5s ease-in-out infinite; }
+@keyframes trot {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-2deg); }
+  50% { transform: translate(-50%, -55%) rotate(2deg); }
 }
 .egg.wiggle { animation: wiggle 0.45s ease-in-out; }
 @keyframes wiggle {
@@ -637,9 +664,9 @@ html, body {
 #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
 
 /* ---------- new home tiles ---------- */
-.card-dressup { background: linear-gradient(145deg, #ec6ead, #b83280); }
-.card-camera  { background: linear-gradient(145deg, #4dc4d4, #2196a8); }
-.card-night   { background: linear-gradient(145deg, #5c6bc0, #303f9f); }
+.card-dressup { background: linear-gradient(150deg, #f06bc0, #a02f8e); --glow: rgba(160, 47, 142, 0.5); }
+.card-camera  { background: linear-gradient(150deg, #54d0e0, #1d93a8); --glow: rgba(29, 147, 168, 0.5); }
+.card-night   { background: linear-gradient(150deg, #7986e8, #2c3a9e); --glow: rgba(44, 58, 158, 0.5); }
 #night-lock-icon { font-size: 0.55em; vertical-align: super; }
 .char-btn svg { width: 70px; height: 78px; }
 
@@ -791,14 +818,35 @@ html, body {
 }
 #dressup-stage {
   flex: 1;
-  background: linear-gradient(180deg, #fde6f3 0%, #e8defa 100%);
+  position: relative;
+  /* dark dressing-room backdrop so skin, white gowns and pale hair pop */
+  background: radial-gradient(ellipse at 50% 35%, #8d72bd 0%, #62498f 55%, #43306b 100%);
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
+  overflow: hidden;
 }
-#dressup-stage svg { height: 96%; max-width: 100%; }
+#dressup-stage::after {
+  /* stage platform under the mannequin */
+  content: '';
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 62%;
+  height: 5%;
+  background: radial-gradient(ellipse, rgba(20, 12, 40, 0.55), transparent 70%);
+  pointer-events: none;
+}
+#dressup-stage svg {
+  height: 96%;
+  max-width: 100%;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 10px 16px rgba(15, 8, 35, 0.5));
+}
 #dressup-panel {
   width: min(46%, 430px);
   display: flex;
@@ -1005,3 +1053,44 @@ html, body {
 }
 #night-stars { color: #b8aef0; font-size: 1.5rem; letter-spacing: 14px; animation: bob 4s ease-in-out infinite; }
 #night-unlock-box { display: flex; gap: 10px; align-items: center; }
+
+/* ---------- passcode keypad ---------- */
+.keypad { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 8px 0 4px; }
+.keypad-dots { display: flex; gap: 14px; }
+.keypad-dots.shake { animation: dotShake 0.4s ease-in-out; }
+@keyframes dotShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(7px); }
+  75% { transform: translateX(-5px); }
+}
+.keypad-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #b9a6d4;
+  background: transparent;
+  transition: background 0.12s, transform 0.12s;
+}
+.keypad-dot.filled { background: #7b5ea0; border-color: #7b5ea0; transform: scale(1.15); }
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.keypad-key {
+  width: 70px;
+  height: 62px;
+  border: none;
+  border-radius: 18px;
+  background: #f3edfa;
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+}
+.keypad-key:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12); }
+.keypad-back { background: #ffe2e2; font-size: 1.3rem; }
+#night-unlock-box .keypad { background: rgba(255, 255, 255, 0.96); border-radius: 24px; padding: 16px 20px; }

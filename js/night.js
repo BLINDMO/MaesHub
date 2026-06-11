@@ -23,24 +23,24 @@ const Night = (() => {
   function init() {
     $('night-lock-art').innerHTML = Chars.SLEEPY_PUP;
 
-    $('night-tile').addEventListener('click', () => {
-      Sound.click();
-      $('night-code').value = '';
-      $('night-gate').classList.remove('hidden');
-      setTimeout(() => $('night-code').focus(), 100);
-    });
-    $('night-gate-cancel').addEventListener('click', () => $('night-gate').classList.add('hidden'));
-    const tryGate = () => {
-      if ($('night-code').value === PASSCODE) {
+    const gatePad = Keypad.create((code, pad) => {
+      if (code === PASSCODE) {
+        pad.reset();
         $('night-gate').classList.add('hidden');
         openSetup();
       } else {
         Sound.bonk();
-        $('night-code').value = '';
+        pad.shake();
+        pad.reset();
       }
-    };
-    $('night-gate-go').addEventListener('click', tryGate);
-    $('night-code').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryGate(); });
+    });
+    $('night-pad').appendChild(gatePad.el);
+    $('night-tile').addEventListener('click', () => {
+      Sound.click();
+      gatePad.reset();
+      $('night-gate').classList.remove('hidden');
+    });
+    $('night-gate-cancel').addEventListener('click', () => $('night-gate').classList.add('hidden'));
 
     const presets = $('night-presets');
     PRESETS.forEach((min) => {
@@ -72,6 +72,19 @@ const Night = (() => {
     });
 
     // the 10-quick-taps grown-up escape hatch on the lock screen
+    const unlockPad = Keypad.create((code, pad) => {
+      if (code === PASSCODE) {
+        Sound.fanfare();
+        pad.reset();
+        clearTimer();
+      } else {
+        Sound.bonk();
+        pad.shake();
+        pad.reset();
+        $('night-unlock-box').classList.add('hidden');
+      }
+    });
+    $('night-unlock-pad').appendChild(unlockPad.el);
     $('night-lock').addEventListener('pointerdown', (e) => {
       if (e.target.closest('#night-unlock-box')) return;
       const now = Date.now();
@@ -79,23 +92,10 @@ const Night = (() => {
       taps.push(now);
       if (taps.length >= 10) {
         taps = [];
+        unlockPad.reset();
         $('night-unlock-box').classList.remove('hidden');
-        $('night-unlock-code').value = '';
-        $('night-unlock-code').focus();
       }
     });
-    const tryUnlock = () => {
-      if ($('night-unlock-code').value === PASSCODE) {
-        Sound.fanfare();
-        clearTimer();
-      } else {
-        Sound.bonk();
-        $('night-unlock-code').value = '';
-        $('night-unlock-box').classList.add('hidden');
-      }
-    };
-    $('night-unlock-go').addEventListener('click', tryUnlock);
-    $('night-unlock-code').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
 
     // resume a timer that was running when the app was closed
     try {

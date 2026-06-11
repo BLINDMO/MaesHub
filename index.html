@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Mae's Hub 🌈</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -226,10 +226,9 @@
     <div class="modal-card">
       <h3>🔒 Grown-Ups Only</h3>
       <p id="gate-question">Enter the parent passcode 🔑</p>
-      <input id="gate-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+      <div id="gate-pad"></div>
       <div class="modal-buttons">
         <button id="gate-cancel" class="btn-pill btn-soft">Go Back</button>
-        <button id="gate-go" class="btn-pill btn-go">Unlock</button>
       </div>
     </div>
   </div>
@@ -276,10 +275,9 @@
   <div class="modal-card">
     <h3>🌙 Nighttime — Grown-Ups Only</h3>
     <p>Enter the parent passcode 🔑</p>
-    <input id="night-code" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+    <div id="night-pad"></div>
     <div class="modal-buttons">
       <button id="night-gate-cancel" class="btn-pill btn-soft">Go Back</button>
-      <button id="night-gate-go" class="btn-pill btn-go">Unlock</button>
     </div>
   </div>
 </div>
@@ -311,23 +309,23 @@
   <p id="night-lock-msg">Wow that was great playing! I can’t wait to sleep and be rested to play with you tomorrow!!!!</p>
   <div id="night-stars" aria-hidden="true">✦ ✧ ⋆ ✦ ⋆ ✧ ✦</div>
   <div id="night-unlock-box" class="hidden">
-    <input id="night-unlock-code" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
-    <button id="night-unlock-go" class="btn-pill btn-go">Unlock</button>
+    <div id="night-unlock-pad"></div>
   </div>
 </div>
 
 <script src="js/vendor/matter.min.js"></script>
-<script src="js/audio.js?v=4"></script>
-<script src="js/confetti.js?v=4"></script>
-<script src="js/characters.js?v=4"></script>
-<script src="js/blocks.js?v=4"></script>
-<script src="js/road.js?v=4"></script>
-<script src="js/eggs.js?v=4"></script>
-<script src="js/garden.js?v=4"></script>
-<script src="js/dressup.js?v=4"></script>
-<script src="js/camera.js?v=4"></script>
-<script src="js/videos.js?v=4"></script>
-<script src="js/night.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/audio.js?v=5"></script>
+<script src="js/confetti.js?v=5"></script>
+<script src="js/characters.js?v=5"></script>
+<script src="js/keypad.js?v=5"></script>
+<script src="js/blocks.js?v=5"></script>
+<script src="js/road.js?v=5"></script>
+<script src="js/eggs.js?v=5"></script>
+<script src="js/garden.js?v=5"></script>
+<script src="js/dressup.js?v=5"></script>
+<script src="js/camera.js?v=5"></script>
+<script src="js/videos.js?v=5"></script>
+<script src="js/night.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>
