@@ -21,17 +21,12 @@
     if (mod && mod.start) mod.start();
   }
 
+  // navigation is silent — sounds are saved for the games themselves
   document.querySelectorAll('.menu-card[data-target]').forEach((card) => {
-    card.addEventListener('click', () => {
-      Sound.fanfare();
-      show(card.dataset.target);
-    });
+    card.addEventListener('click', () => show(card.dataset.target));
   });
   document.querySelectorAll('.btn-back').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      Sound.click();
-      show('screen-home');
-    });
+    btn.addEventListener('click', () => show('screen-home'));
   });
 
   // block iOS pinch-zoom so little fingers can't break the layout

@@ -36,7 +36,6 @@ const Night = (() => {
     });
     $('night-pad').appendChild(gatePad.el);
     $('night-tile').addEventListener('click', () => {
-      Sound.click();
       gatePad.reset();
       $('night-gate').classList.remove('hidden');
     });

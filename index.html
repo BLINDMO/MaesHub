@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Mae's Hub 🌈</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 
@@ -313,9 +313,23 @@
 
   <div id="player-overlay" class="overlay hidden">
     <div id="player-box">
+      <button id="player-fav" aria-label="Favorite this video">🤍</button>
       <button id="player-close" aria-label="Close video">✖️</button>
       <div id="player-frame"></div>
       <button id="player-next" aria-label="Next video"><span class="next-x">✖</span> Next one!</button>
+    </div>
+  </div>
+
+  <div id="video-menu" class="overlay hidden">
+    <div class="modal-card">
+      <h3 id="video-menu-title"></h3>
+      <div class="menu-actions">
+        <button id="vm-play" class="btn-pill btn-go">▶️ Play</button>
+        <button id="vm-fav" class="btn-pill"></button>
+        <button id="vm-remove" class="btn-pill btn-soft">🗑️ Remove this video</button>
+        <button id="vm-block" class="btn-pill btn-soft"></button>
+        <button id="vm-cancel" class="btn-pill">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -411,19 +425,19 @@
 </div>
 
 <script src="js/vendor/matter.min.js"></script>
-<script src="js/audio.js?v=11"></script>
-<script src="js/confetti.js?v=11"></script>
-<script src="js/characters.js?v=11"></script>
-<script src="js/keypad.js?v=11"></script>
-<script src="js/blocks.js?v=11"></script>
-<script src="js/road.js?v=11"></script>
-<script src="js/eggs.js?v=11"></script>
-<script src="js/garden.js?v=11"></script>
-<script src="js/bridge.js?v=11"></script>
-<script src="js/dressup.js?v=11"></script>
-<script src="js/camera.js?v=11"></script>
-<script src="js/videos.js?v=11"></script>
-<script src="js/night.js?v=11"></script>
-<script src="js/app.js?v=11"></script>
+<script src="js/audio.js?v=12"></script>
+<script src="js/confetti.js?v=12"></script>
+<script src="js/characters.js?v=12"></script>
+<script src="js/keypad.js?v=12"></script>
+<script src="js/blocks.js?v=12"></script>
+<script src="js/road.js?v=12"></script>
+<script src="js/eggs.js?v=12"></script>
+<script src="js/garden.js?v=12"></script>
+<script src="js/bridge.js?v=12"></script>
+<script src="js/dressup.js?v=12"></script>
+<script src="js/camera.js?v=12"></script>
+<script src="js/videos.js?v=12"></script>
+<script src="js/night.js?v=12"></script>
+<script src="js/app.js?v=12"></script>
 </body>
 </html>

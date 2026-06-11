@@ -95,20 +95,44 @@ const Videos = (() => {
     card.className = 'video-card';
     card.innerHTML = `
       <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">
-      <button class="fav-btn" aria-label="favorite"></button>
+      ${isFav(v.id) ? '<span class="fav-badge">💖</span>' : ''}
       <span class="v-title"></span>
       <span class="v-channel"></span>`;
     card.querySelector('.v-title').textContent = v.title;
     card.querySelector('.v-channel').textContent = v.channel;
-    const fav = card.querySelector('.fav-btn');
-    fav.textContent = isFav(v.id) ? '💖' : '🤍';
-    fav.addEventListener('click', (e) => {
-      e.stopPropagation();
-      Sound.sparkle();
-      toggleFav(v.id);
+
+    // tap plays; press-and-hold opens the manage menu
+    let pressTimer = null;
+    card.addEventListener('pointerdown', () => {
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        suppressClick = true;
+        openVideoMenu(v);
+      }, 550);
     });
-    card.addEventListener('click', () => play(v.id));
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) =>
+      card.addEventListener(ev, () => clearTimeout(pressTimer)));
+    card.addEventListener('click', () => {
+      if (suppressClick) { suppressClick = false; return; }
+      play(v.id);
+    });
     return card;
+  }
+
+  /* ----- press-and-hold video menu ----- */
+  let suppressClick = false;
+  let menuVideo = null;
+
+  function openVideoMenu(v) {
+    menuVideo = v;
+    document.getElementById('video-menu-title').textContent = v.title;
+    document.getElementById('vm-fav').textContent = isFav(v.id) ? '💔 Un-favorite' : '💖 Favorite';
+    document.getElementById('vm-block').textContent = `⛔ Block all “${v.channel}”`;
+    document.getElementById('video-menu').classList.remove('hidden');
+  }
+
+  function closeVideoMenu() {
+    document.getElementById('video-menu').classList.add('hidden');
   }
 
   function renderGrid() {
@@ -153,8 +177,8 @@ const Videos = (() => {
   }
 
   function play(id) {
-    Sound.click();
     nowPlaying = id;
+    document.getElementById('player-fav').textContent = isFav(id) ? '💖' : '🤍';
     document.getElementById('player-overlay').classList.remove('hidden');
     const frame = document.getElementById('player-frame');
     if (window.YT && window.YT.Player) {
@@ -199,7 +223,6 @@ const Videos = (() => {
   let gatePad = null;
 
   function openGate() {
-    Sound.click();
     if (gatePad) gatePad.reset();
     document.getElementById('gate-modal').classList.remove('hidden');
   }
@@ -330,6 +353,35 @@ const Videos = (() => {
     loadYTApi();
     document.getElementById('player-close').addEventListener('click', closePlayer);
     document.getElementById('player-next').addEventListener('click', playNext);
+    document.getElementById('player-fav').addEventListener('click', () => {
+      Sound.sparkle();
+      toggleFav(nowPlaying); // re-renders the grid behind the player
+      document.getElementById('player-fav').textContent = isFav(nowPlaying) ? '💖' : '🤍';
+    });
+
+    // press-and-hold menu actions
+    document.getElementById('vm-play').addEventListener('click', () => {
+      closeVideoMenu();
+      play(menuVideo.id);
+    });
+    document.getElementById('vm-fav').addEventListener('click', () => {
+      Sound.sparkle();
+      toggleFav(menuVideo.id);
+      closeVideoMenu();
+    });
+    document.getElementById('vm-remove').addEventListener('click', () => {
+      removeVideo(menuVideo.id);
+      renderGrid();
+      closeVideoMenu();
+    });
+    document.getElementById('vm-block').addEventListener('click', () => {
+      const word = menuVideo.channel.toLowerCase();
+      if (!state.blocked.includes(word)) state.blocked.push(word);
+      save();
+      renderGrid();
+      closeVideoMenu();
+    });
+    document.getElementById('vm-cancel').addEventListener('click', closeVideoMenu);
     document.getElementById('videos-grownups-btn').addEventListener('click', openGate);
     gatePad = Keypad.create(onGateCode);
     document.getElementById('gate-pad').appendChild(gatePad.el);
@@ -338,7 +390,6 @@ const Videos = (() => {
     document.getElementById('block-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addBlockedWord(); });
     document.getElementById('video-add').addEventListener('click', addVideo);
     document.getElementById('parent-done').addEventListener('click', () => {
-      Sound.click();
       document.getElementById('parent-panel').classList.add('hidden');
       renderGrid();
     });

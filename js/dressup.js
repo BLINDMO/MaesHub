@@ -459,7 +459,6 @@ const Dressup = (() => {
       btn.className = 'dress-tab' + (cat === currentCat ? ' selected' : '');
       btn.textContent = label;
       btn.addEventListener('click', () => {
-        Sound.click();
         currentCat = cat;
         renderTabs();
         renderItems();

@@ -60,11 +60,9 @@ const CameraStudio = (() => {
     document.getElementById('camera-save').addEventListener('click', savePhoto);
     document.getElementById('camera-gallery-btn').addEventListener('click', openGallery);
     document.getElementById('gallery-close').addEventListener('click', () => {
-      Sound.click();
       document.getElementById('gallery-overlay').classList.add('hidden');
     });
     document.getElementById('photo-view-close').addEventListener('click', () => {
-      Sound.click();
       document.getElementById('photo-view').classList.add('hidden');
     });
     document.getElementById('photo-view-delete').addEventListener('click', () => {
@@ -225,7 +223,6 @@ const CameraStudio = (() => {
 
   /* ----- gallery UI ----- */
   function openGallery() {
-    Sound.click();
     renderGallery();
     document.getElementById('gallery-overlay').classList.remove('hidden');
   }
