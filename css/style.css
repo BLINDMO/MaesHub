@@ -1520,3 +1520,12 @@ html, body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 #player-fav:active { transform: scale(0.88); }
+
+/* While the can is flying/pouring it is an actor, never a button —
+   no card frame, glow or outline may travel with it. */
+#garden-can.flying, #garden-can.returning {
+  background: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
