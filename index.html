@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Mae's Hub 🌈</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -29,6 +29,9 @@
     </button>
     <button class="menu-card card-garden" data-target="screen-garden">
       <span class="card-emoji">🌸</span><span class="card-label">Magic Garden</span>
+    </button>
+    <button class="menu-card card-bridge" data-target="screen-bridge">
+      <span class="card-emoji">🌉</span><span class="card-label">Wobbly Bridge</span>
     </button>
     <button class="menu-card card-dressup" data-target="screen-dressup">
       <span class="card-emoji">👗</span><span class="card-label">Dress-Up</span>
@@ -158,10 +161,60 @@
     <div id="garden-rainbow" class="hidden">🌈</div>
     <div id="garden-sky"></div>
     <div id="garden-ground"></div>
-    <div id="garden-hint">Tap the grass to plant a magic seed! 🌱<br>Then carry the watering can to your plant and watch it grow! 💧</div>
+    <div id="garden-hint">Tap the grass to plant a magic seed! 🌱<br>Then tap the watering can to pick it up, and tap your plant! 💧</div>
     <div id="garden-can" aria-label="Watering can"></div>
   </div>
   <button id="garden-reset" class="btn-pill">New Garden 🌱</button>
+</div>
+
+<!-- ============ WOBBLY BRIDGE ============ -->
+<div id="screen-bridge" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>🌉 Wobbly Bridge</h2>
+    <div id="bridge-hud">Level <span id="bridge-level">1</span> 🏅 <span id="bridge-best">1</span></div>
+  </header>
+  <div id="bridge-area">
+    <div id="bridge-board"></div>
+    <div id="bridge-pup" class="hidden"></div>
+    <div id="bridge-river">
+      <span class="river-float" style="left:18%; animation-delay:-2s">🐟</span>
+      <span class="river-float" style="left:55%; animation-delay:-5s">🦆</span>
+      <span class="river-float" style="left:80%; animation-delay:-8s">🐸</span>
+    </div>
+  </div>
+
+  <div id="bridge-start-overlay" class="overlay">
+    <div class="modal-card">
+      <h3>Who's crossing the wobbly bridge?</h3>
+      <p>Tap the planks one at a time to choose the path —<br>but loose, cracked planks fall into the river! 👀</p>
+      <div class="char-row" id="bridge-char-row"></div>
+    </div>
+  </div>
+
+  <div id="bridge-fall-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <div class="big-emoji">💦</div>
+      <h3>Sploooosh!</h3>
+      <p id="bridge-fall-text"></p>
+      <div class="modal-buttons">
+        <button id="bridge-fall-newchar" class="btn-pill btn-soft">New Friend 🐾</button>
+        <button id="bridge-retry" class="btn-pill btn-go btn-huge">Try Again! 🌉</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bridge-win-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <div class="big-emoji">🏡🎉</div>
+      <h3>Safe and sound on the other side!</h3>
+      <p id="bridge-win-text"></p>
+      <div class="modal-buttons">
+        <button id="bridge-win-newchar" class="btn-pill btn-soft">New Friend 🐾</button>
+        <button id="bridge-next" class="btn-pill btn-go btn-huge">Next Bridge ▶️</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ============ DRESS-UP ============ -->
@@ -314,18 +367,19 @@
 </div>
 
 <script src="js/vendor/matter.min.js"></script>
-<script src="js/audio.js?v=6"></script>
-<script src="js/confetti.js?v=6"></script>
-<script src="js/characters.js?v=6"></script>
-<script src="js/keypad.js?v=6"></script>
-<script src="js/blocks.js?v=6"></script>
-<script src="js/road.js?v=6"></script>
-<script src="js/eggs.js?v=6"></script>
-<script src="js/garden.js?v=6"></script>
-<script src="js/dressup.js?v=6"></script>
-<script src="js/camera.js?v=6"></script>
-<script src="js/videos.js?v=6"></script>
-<script src="js/night.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/audio.js?v=7"></script>
+<script src="js/confetti.js?v=7"></script>
+<script src="js/characters.js?v=7"></script>
+<script src="js/keypad.js?v=7"></script>
+<script src="js/blocks.js?v=7"></script>
+<script src="js/road.js?v=7"></script>
+<script src="js/eggs.js?v=7"></script>
+<script src="js/garden.js?v=7"></script>
+<script src="js/bridge.js?v=7"></script>
+<script src="js/dressup.js?v=7"></script>
+<script src="js/camera.js?v=7"></script>
+<script src="js/videos.js?v=7"></script>
+<script src="js/night.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
 </body>
 </html>

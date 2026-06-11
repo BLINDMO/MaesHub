@@ -5,6 +5,7 @@
     'screen-road': Road,
     'screen-eggs': Eggs,
     'screen-garden': Garden,
+    'screen-bridge': Bridge,
     'screen-dressup': Dressup,
     'screen-camera': CameraStudio,
     'screen-videos': Videos,

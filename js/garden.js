@@ -1,7 +1,8 @@
 /* ============ Game 4: Magic Garden ============
- * Tap the grass to plant a seed, then pick up the watering can and carry
- * it to a plant. Watering starts a 20-second magic grow with a little
- * progress bar — sprout, leaves, bud — until it blooms into a big
+ * Tap the grass to plant a seed — a little stem pushes up out of the
+ * dirt. Tap the watering can to pick it up, then tap a plant: the can
+ * flies over, tips, and pours. That starts a 20-second magic grow with a
+ * progress bar — stem, leaves, bud — until it blooms into a big
  * beautiful flower. Blooms attract butterflies; five flowers earn a
  * rainbow. No way to lose!
  */
@@ -10,7 +11,37 @@ const Garden = (() => {
   const BUTTERFLIES = ['🦋', '🐝', '🐞'];
   const MAX_PLANTS = 10;
   const GROW_SECONDS = 20;
-  const STAGES = ['🌱', '🌿', '🪴', '🌷'];
+  const STAGES = ['', '🌿', '🪴', '🌷']; // stage 0 is the drawn stem sprout
+
+  // a fresh stem pushing out of its little dirt mound
+  const SPROUT_SVG = `<svg viewBox="0 0 60 62" width="52" height="54">
+    <ellipse cx="30" cy="54" rx="19" ry="7" fill="#8a5a32"/>
+    <ellipse cx="30" cy="52" rx="15" ry="5" fill="#a06b3c"/>
+    <g class="stem">
+      <path d="M30 52 C31 44 29 36 30 26" stroke="#4f9e3f" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M30 38 C22 37 17 31 19 25 C26 27 30 32 30 38 Z" fill="#5fb44e"/>
+      <path d="M30 31 C38 30 43 24 41 18 C34 20 30 25 30 31 Z" fill="#6fc75d"/>
+    </g>
+  </svg>`;
+
+  // a proper smiling sun: glowing core with spinning rays
+  const SUN_SVG = `<svg viewBox="0 0 120 120">
+    <defs>
+      <radialGradient id="sun-core"><stop offset="0.3" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffc93d"/></radialGradient>
+    </defs>
+    <g id="sun-rays" fill="#ffd34d">
+      ${Array.from({ length: 12 }, (_, i) =>
+        `<path d="M60 4 L66 24 L54 24 Z" transform="rotate(${i * 30} 60 60)"/>`).join('')}
+    </g>
+    <circle cx="60" cy="60" r="33" fill="url(#sun-core)" stroke="#f0a92e" stroke-width="3"/>
+    <circle cx="49" cy="55" r="3.4" fill="#7a4d12"/>
+    <circle cx="71" cy="55" r="3.4" fill="#7a4d12"/>
+    <circle cx="50.2" cy="53.8" r="1.1" fill="#fff"/>
+    <circle cx="72.2" cy="53.8" r="1.1" fill="#fff"/>
+    <path d="M48 66 Q60 76 72 66" stroke="#7a4d12" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <circle cx="43" cy="64" r="4.5" fill="#ffaf63" opacity="0.65"/>
+    <circle cx="77" cy="64" r="4.5" fill="#ffaf63" opacity="0.65"/>
+  </svg>`;
 
   const CAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 90">
     <!-- a proper watering can: body, spout, handle, rose -->
@@ -32,23 +63,33 @@ const Garden = (() => {
   let butterflyCount = 0;
   let rafId = null, lastTime = 0, active = false;
   let timers = [];
-  let dragging = false;
+  let canSelected = false;
 
   function init() {
     area = document.getElementById('garden-area');
     ground = document.getElementById('garden-ground');
     can = document.getElementById('garden-can');
     can.innerHTML = CAN_SVG;
+    document.getElementById('garden-sun').innerHTML = SUN_SVG;
+
+    // tap the can to pick it up / put it down
+    can.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (can.classList.contains('flying')) return;
+      Sound.click();
+      canSelected = !canSelected;
+      can.classList.toggle('selected', canSelected);
+    });
 
     ground.addEventListener('pointerdown', (e) => {
-      if (e.target !== ground || dragging) return;
+      if (e.target !== ground) return;
+      if (canSelected) { Sound.splash(); return; } // watering bare grass is just a splash
       plantSeed(e);
     });
     document.getElementById('garden-reset').addEventListener('click', () => {
       Sound.pop();
       resetGarden();
     });
-    setupCanDrag();
   }
 
   function start() {
@@ -79,55 +120,13 @@ const Garden = (() => {
     document.getElementById('garden-hint').style.display = '';
   }
 
-  /* ----- the draggable watering can ----- */
-  function setupCanDrag() {
-    can.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      dragging = true;
-      can.setPointerCapture(e.pointerId);
-      can.classList.add('held');
-      moveCan(e);
-      Sound.click();
-    });
-    can.addEventListener('pointermove', (e) => {
-      if (dragging) moveCan(e);
-    });
-    can.addEventListener('pointerup', (e) => {
-      if (!dragging) return;
-      dragging = false;
-      can.classList.remove('held');
-      const target = plantNear(e);
-      if (target) waterPlant(target, e);
-      else returnCan();
-    });
-  }
-
-  function moveCan(e) {
-    const r = area.getBoundingClientRect();
-    can.style.left = (e.clientX - r.left - 45) + 'px';
-    can.style.top = (e.clientY - r.top - 40) + 'px';
-    can.style.right = 'auto';
-    can.style.bottom = 'auto';
-  }
-
-  function plantNear(e) {
-    const r = area.getBoundingClientRect();
-    const x = e.clientX - r.left, y = e.clientY - r.top;
-    let best = null, bestD = 90;
-    for (const p of plants) {
-      const d = Math.hypot(p.el.offsetLeft - x, p.el.offsetTop - y);
-      if (d < bestD) { bestD = d; best = p; }
-    }
-    return best;
-  }
-
+  /* ----- the flying watering can ----- */
   function returnCan() {
     can.classList.add('returning');
+    can.classList.remove('flying');
     can.style.left = '';
     can.style.top = '';
-    can.style.right = '';
-    can.style.bottom = '';
-    setTimeout(() => can.classList.remove('returning'), 450);
+    setTimeout(() => can.classList.remove('returning'), 500);
   }
 
   /* ----- planting & growing ----- */
@@ -138,13 +137,13 @@ const Garden = (() => {
     const r = area.getBoundingClientRect();
     const el = document.createElement('button');
     el.className = 'plant';
-    el.textContent = STAGES[0];
+    el.innerHTML = SPROUT_SVG; // a stem pushes up out of the dirt first
     el.style.left = (e.clientX - r.left) + 'px';
     el.style.top = (e.clientY - r.top) + 'px';
     const plant = { el, growing: false, bloomed: false, bar: null };
     el.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
-      if (dragging) return;
+      if (canSelected) { waterPlant(plant); return; }
       if (plant.bloomed) { Sound.sparkle(); sparkleBurst(el, 5); }
       else { Sound.click(); el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle'); }
     });
@@ -152,19 +151,18 @@ const Garden = (() => {
     plants.push(plant);
   }
 
-  function waterPlant(plant, e) {
+  function waterPlant(plant) {
+    if (can.classList.contains('flying')) return; // one pour at a time
     if (plant.bloomed || plant.growing) {
-      Sound.splash();
-      rainDroplets(plant.el);
-      later(() => returnCan(), 900);
       pourOver(plant);
+      later(() => { Sound.splash(); rainDroplets(plant.el); }, 420);
+      later(() => returnCan(), 1500);
       return;
     }
     plant.growing = true;
     pourOver(plant);
-    Sound.splash();
-    rainDroplets(plant.el);
-    later(() => returnCan(), 1100);
+    later(() => { Sound.splash(); rainDroplets(plant.el); }, 420);
+    later(() => returnCan(), 1500);
 
     // little progress bar that fills over the 20-second grow
     const bar = document.createElement('div');
@@ -191,14 +189,13 @@ const Garden = (() => {
     later(() => bloom(plant), GROW_SECONDS * 1000);
   }
 
-  // park the can tipped over the plant while it pours
+  // the can flies over the plant, tips, and pours
   function pourOver(plant) {
-    can.classList.add('pouring');
+    can.classList.add('flying');
     can.style.left = (plant.el.offsetLeft - 10) + 'px';
-    can.style.top = (plant.el.offsetTop - 95) + 'px';
-    can.style.right = 'auto';
-    can.style.bottom = 'auto';
-    setTimeout(() => can.classList.remove('pouring'), 1000);
+    can.style.top = (plant.el.offsetTop - 100) + 'px';
+    later(() => can.classList.add('pouring'), 380);
+    later(() => can.classList.remove('pouring'), 1400);
   }
 
   function bloom(plant) {
