@@ -8,49 +8,86 @@ const Dressup = (() => {
   const STORE_KEY = 'maeshub.outfit.v1';
   const SKIN = '#f7d9c0', SKIN_D = '#eac3a5';
 
+  /* ---------- art helpers: gradients give fabric, hair and skin depth ---- */
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const f = (v) => Math.max(0, Math.min(255, v + amt));
+    const r = f(n >> 16), g = f((n >> 8) & 255), b = f(n & 255);
+    return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+  }
+  // gradients map to each element's own bounding box, so every garment
+  // piece gets its own light-to-dark satin falloff
+  function grad(id, c1, c2, x2 = 0, y2 = 1) {
+    return `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">
+      <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>
+    </linearGradient>`;
+  }
+  const GOLD = `<defs>${grad('m-gold', '#ffeebb', '#d8a232')}</defs>`;
+  const SILVER = `<defs>${grad('m-silver', '#f4f8fc', '#aebccc')}</defs>`;
+
   /* ---------- the mannequin ---------- */
   function bodySVG() {
     return `
+      <defs>
+        ${grad('skin-g', '#fbe6cf', '#efc6a2')}
+        <radialGradient id="iris-g"><stop offset="0.25" stop-color="#8fd2f2"/><stop offset="1" stop-color="#3a85bd"/></radialGradient>
+        <radialGradient id="blush-g"><stop offset="0" stop-color="#f7a8a0" stop-opacity="0.55"/><stop offset="1" stop-color="#f7a8a0" stop-opacity="0"/></radialGradient>
+      </defs>
       <!-- legs -->
-      <path d="M140 260 L137 450" stroke="${SKIN}" stroke-width="17" stroke-linecap="round"/>
-      <path d="M160 260 L163 450" stroke="${SKIN}" stroke-width="17" stroke-linecap="round"/>
-      <ellipse cx="134" cy="462" rx="13" ry="8" fill="${SKIN}"/>
-      <ellipse cx="166" cy="462" rx="13" ry="8" fill="${SKIN}"/>
+      <path d="M140 260 L137 450" stroke="url(#skin-g)" stroke-width="17" stroke-linecap="round"/>
+      <path d="M160 260 L163 450" stroke="url(#skin-g)" stroke-width="17" stroke-linecap="round"/>
+      <ellipse cx="134" cy="462" rx="13" ry="8" fill="url(#skin-g)"/>
+      <ellipse cx="166" cy="462" rx="13" ry="8" fill="url(#skin-g)"/>
       <!-- arms -->
-      <path d="M122 158 C102 195 100 245 105 288" stroke="${SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>
-      <path d="M178 158 C198 195 200 245 195 288" stroke="${SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>
-      <circle cx="105" cy="293" r="8" fill="${SKIN}"/>
-      <circle cx="195" cy="293" r="8" fill="${SKIN}"/>
-      <!-- torso -->
-      <path d="M120 150 Q150 140 180 150 C184 195 174 230 168 264 L132 264 C126 230 116 195 120 150 Z" fill="${SKIN}"/>
+      <path d="M122 158 C102 195 100 245 105 288" stroke="url(#skin-g)" stroke-width="13" stroke-linecap="round" fill="none"/>
+      <path d="M178 158 C198 195 200 245 195 288" stroke="url(#skin-g)" stroke-width="13" stroke-linecap="round" fill="none"/>
+      <circle cx="105" cy="293" r="8" fill="url(#skin-g)"/>
+      <circle cx="195" cy="293" r="8" fill="url(#skin-g)"/>
+      <!-- torso with soft side shading -->
+      <path d="M120 150 Q150 140 180 150 C184 195 174 230 168 264 L132 264 C126 230 116 195 120 150 Z" fill="url(#skin-g)"/>
+      <path d="M120 150 C118 192 126 228 132 262 L138 262 C130 226 124 192 126 152 Z" fill="${SKIN_D}" opacity="0.35"/>
       <!-- neck & head -->
-      <rect x="142" y="122" width="16" height="22" rx="6" fill="${SKIN_D}"/>
-      <ellipse cx="150" cy="86" rx="39" ry="44" fill="${SKIN}"/>
-      <!-- face -->
-      <ellipse cx="134" cy="86" rx="6.5" ry="8.5" fill="#fff"/>
-      <ellipse cx="166" cy="86" rx="6.5" ry="8.5" fill="#fff"/>
-      <circle cx="134" cy="88" r="4.4" fill="#5db5e8"/>
-      <circle cx="166" cy="88" r="4.4" fill="#5db5e8"/>
-      <circle cx="134" cy="88" r="2" fill="#2b2b33"/>
-      <circle cx="166" cy="88" r="2" fill="#2b2b33"/>
-      <circle cx="135.4" cy="86.4" r="1" fill="#fff"/>
-      <circle cx="167.4" cy="86.4" r="1" fill="#fff"/>
-      <path d="M126 74 Q134 70 141 74" stroke="#b88a5e" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M159 74 Q166 70 174 74" stroke="#b88a5e" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M148 96 Q150 99 152 96" stroke="${SKIN_D}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M140 108 Q150 116 160 108" stroke="#d4766f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <circle cx="124" cy="100" r="5" fill="#f7b3ad" opacity="0.5"/>
-      <circle cx="176" cy="100" r="5" fill="#f7b3ad" opacity="0.5"/>`;
+      <path d="M142 118 h16 v22 q-8 6 -16 0 Z" fill="${SKIN_D}"/>
+      <ellipse cx="150" cy="86" rx="39" ry="44" fill="url(#skin-g)"/>
+      <!-- brows -->
+      <path d="M124 71 Q133 66 142 71" stroke="#b8854f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M158 71 Q167 66 176 71" stroke="#b8854f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <!-- eyes: sclera, iris, pupil, catchlights, lid + lashes -->
+      <ellipse cx="133" cy="87" rx="8.2" ry="10" fill="#fff"/>
+      <ellipse cx="167" cy="87" rx="8.2" ry="10" fill="#fff"/>
+      <circle cx="133" cy="88.5" r="5.6" fill="url(#iris-g)"/>
+      <circle cx="167" cy="88.5" r="5.6" fill="url(#iris-g)"/>
+      <circle cx="133" cy="88.5" r="2.6" fill="#23232c"/>
+      <circle cx="167" cy="88.5" r="2.6" fill="#23232c"/>
+      <circle cx="135" cy="86" r="1.5" fill="#fff"/>
+      <circle cx="169" cy="86" r="1.5" fill="#fff"/>
+      <circle cx="131" cy="91" r="0.9" fill="#fff" opacity="0.8"/>
+      <circle cx="165" cy="91" r="0.9" fill="#fff" opacity="0.8"/>
+      <path d="M124.5 82 Q133 75 141.5 82" stroke="#3a2e26" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M158.5 82 Q167 75 175.5 82" stroke="#3a2e26" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M124 82 l-3.5 -2.5 M127 79.4 l-2.8 -3.2 M176 82 l3.5 -2.5 M173 79.4 l2.8 -3.2"
+        stroke="#3a2e26" stroke-width="1.8" stroke-linecap="round"/>
+      <!-- nose & lips -->
+      <path d="M148 98 Q150 101 152 98" stroke="${SKIN_D}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M141 109 Q145.5 105.5 150 108.5 Q154.5 105.5 159 109 Q150 117.5 141 109 Z" fill="#e0685f"/>
+      <path d="M144 108.4 Q150 111 156 108.4" stroke="#c24f48" stroke-width="1.2" fill="none" opacity="0.6"/>
+      <!-- blush -->
+      <circle cx="123" cy="100" r="7.5" fill="url(#blush-g)"/>
+      <circle cx="177" cy="100" r="7.5" fill="url(#blush-g)"/>`;
   }
 
   function onesieSVG() {
-    return `
+    return `<g id="onesie-layer">
+      <defs>${grad('onesie-g', '#f6f1fc', '#ddd1ee')}</defs>
       <path d="M118 150 Q150 138 182 150 C187 210 180 255 178 295 Q178 318 162 318 L160 280 L140 280 L138 318 Q122 318 122 295 C120 255 113 210 118 150 Z"
-        fill="#eee8f6" stroke="#d6cce6" stroke-width="3"/>
-      <circle cx="150" cy="175" r="3.4" fill="#c9bcdf"/>
-      <circle cx="150" cy="197" r="3.4" fill="#c9bcdf"/>
-      <circle cx="150" cy="219" r="3.4" fill="#c9bcdf"/>
-      <path d="M136 152 Q150 162 164 152" stroke="#d6cce6" stroke-width="3" fill="none"/>`;
+        fill="url(#onesie-g)" stroke="#cfc2e2" stroke-width="3"/>
+      <path d="M124 156 C122 200 128 240 130 270 L136 270 C132 238 128 200 130 158 Z" fill="#fff" opacity="0.5"/>
+      <circle cx="150" cy="175" r="3.6" fill="#fff" stroke="#c4b5da" stroke-width="1.4"/>
+      <circle cx="150" cy="197" r="3.6" fill="#fff" stroke="#c4b5da" stroke-width="1.4"/>
+      <circle cx="150" cy="219" r="3.6" fill="#fff" stroke="#c4b5da" stroke-width="1.4"/>
+      <path d="M134 151 Q138 158 144 153 Q150 160 156 153 Q162 158 166 151" stroke="#cfc2e2" stroke-width="2.4" fill="none"/>
+      <path d="M126 286 q6 5 12 0 M162 286 q6 5 12 0" stroke="#cfc2e2" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
+    </g>`;
   }
 
   /* ---------- wardrobe generation ---------- */
@@ -132,7 +169,9 @@ const Dressup = (() => {
   const sparkles = (a, n, y0, y1) => Array.from({ length: n }, (_, i) =>
     `<circle cx="${100 + ((i * 53) % 100)}" cy="${y0 + ((i * 37) % (y1 - y0))}" r="2.6" fill="${a}" opacity="0.9"/>`).join('');
   const bodice = (m, d) =>
-    `<path d="M121 150 Q150 140 179 150 L173 240 Q150 250 127 240 Z" fill="${m}" stroke="${d}" stroke-width="2.5"/>`;
+    `<path d="M121 150 Q150 140 179 150 L173 240 Q150 250 127 240 Z" fill="${m}" stroke="${d}" stroke-width="2.5"/>
+     <path d="M125 156 Q133 151 139 153 L135 234 Q129 232 128 226 Z" fill="#ffffff" opacity="0.28"/>
+     <path d="M124 151 Q150 142 176 151" stroke="#ffffff" stroke-width="2.4" fill="none" opacity="0.5"/>`;
 
   const DRESS_SHAPES = [
     ['Ballgown', ([, m, d, a]) => bodice(m, d) +
@@ -213,8 +252,8 @@ const Dressup = (() => {
   function both(fn) { return fn(134) + fn(166); }
 
   const ACCESSORIES = [
-    acc('Golden Crown', 'head', '90 14 120 60', `<path d="M118 56 L126 30 L138 48 L150 24 L162 48 L174 30 L182 56 Z" fill="#f3c64e" stroke="#d3a32e" stroke-width="2.5"/><circle cx="150" cy="20" r="4" fill="#f06a7e"/>`),
-    acc('Silver Tiara', 'head', '100 20 100 50', `<path d="M124 54 Q150 26 176 54" fill="none" stroke="#cdd6e0" stroke-width="6" stroke-linecap="round"/><circle cx="150" cy="32" r="5.5" fill="#9fd4f2"/><circle cx="134" cy="42" r="3" fill="#e8eef4"/><circle cx="166" cy="42" r="3" fill="#e8eef4"/>`),
+    acc('Golden Crown', 'head', '90 14 120 60', `${GOLD}<path d="M118 56 L126 30 L138 48 L150 24 L162 48 L174 30 L182 56 Z" fill="url(#m-gold)" stroke="#b9871f" stroke-width="2.5"/><circle cx="150" cy="20" r="4.4" fill="#f06a7e"/><circle cx="149" cy="18.6" r="1.4" fill="#ffd9e0"/><circle cx="130" cy="50" r="2.2" fill="#fff" opacity="0.85"/><circle cx="170" cy="50" r="2.2" fill="#fff" opacity="0.85"/>`),
+    acc('Silver Tiara', 'head', '100 20 100 50', `${SILVER}<path d="M124 54 Q150 26 176 54" fill="none" stroke="url(#m-silver)" stroke-width="6" stroke-linecap="round"/><circle cx="150" cy="32" r="5.5" fill="#9fd4f2"/><circle cx="148.4" cy="30.4" r="1.8" fill="#fff"/><circle cx="134" cy="42" r="3" fill="#e8eef4"/><circle cx="166" cy="42" r="3" fill="#e8eef4"/>`),
     acc('Rose-Gold Crown', 'head', '95 14 110 55', `<path d="M122 54 L130 32 L142 46 L150 26 L158 46 L170 32 L178 54 Z" fill="#eeb8a8" stroke="#d8957f" stroke-width="2.5"/><circle cx="150" cy="22" r="3.6" fill="#fff"/>`),
     acc('Pearl Tiara', 'head', '100 24 100 45', `<path d="M126 54 Q150 32 174 54" fill="none" stroke="#f3eee4" stroke-width="5"/><circle cx="138" cy="42" r="4" fill="#fff"/><circle cx="150" cy="37" r="5" fill="#fff"/><circle cx="162" cy="42" r="4" fill="#fff"/>`),
     acc('Flower Crown', 'head', '95 24 110 45', [0, 1, 2, 3, 4].map((i) => `<circle cx="${122 + i * 14}" cy="${44 - Math.sin(i / 4 * Math.PI) * 10}" r="6" fill="${i % 2 ? '#f9b8d4' : '#fff'}"/><circle cx="${122 + i * 14}" cy="${44 - Math.sin(i / 4 * Math.PI) * 10}" r="2.4" fill="#f3c64e"/>`).join('')),
@@ -235,7 +274,7 @@ const Dressup = (() => {
     acc('Heart Pendant', 'body', '120 140 60 40', `<path d="M132 148 Q150 162 168 148" fill="none" stroke="#e8bb4a" stroke-width="2.5"/><path d="M150 172 C141 165 140 159 145 157 C148 156 150 159 150 161 C150 159 152 156 155 157 C160 159 159 165 150 172 Z" fill="#f06a7e"/>`),
     acc('Star Pendant', 'body', '120 140 60 40', `<path d="M132 148 Q150 162 168 148" fill="none" stroke="#cdd6e0" stroke-width="2.5"/><path d="M150 158 l2.8 5.6 6.2 0.9 -4.5 4.4 1 6.2 -5.5 -3 -5.5 3 1 -6.2 -4.5 -4.4 6.2 -0.9 Z" fill="#9fd4f2"/>`),
     acc('Gem Choker', 'body', '120 138 60 25', `<path d="M133 146 Q150 154 167 146" fill="none" stroke="#a861b8" stroke-width="5"/><circle cx="150" cy="151" r="4" fill="#ffe9f7"/>`),
-    acc('Star Wand', 'body', '185 215 70 95', `<path d="M196 290 L214 236" stroke="#e8bb4a" stroke-width="5" stroke-linecap="round"/><path d="M216 230 l3.4 6.8 7.5 1.1 -5.4 5.3 1.3 7.5 -6.8 -3.6 -6.8 3.6 1.3 -7.5 -5.4 -5.3 7.5 -1.1 Z" fill="#f3c64e"/><path d="M206 252 l4 2 M222 258 l-3 4" stroke="#f7e9b0" stroke-width="2.4" stroke-linecap="round"/>`),
+    acc('Star Wand', 'body', '185 215 70 95', `${GOLD}<path d="M196 290 L214 236" stroke="url(#m-gold)" stroke-width="5" stroke-linecap="round"/><path d="M216 230 l3.4 6.8 7.5 1.1 -5.4 5.3 1.3 7.5 -6.8 -3.6 -6.8 3.6 1.3 -7.5 -5.4 -5.3 7.5 -1.1 Z" fill="url(#m-gold)" stroke="#b9871f" stroke-width="1.2"/><path d="M206 252 l4 2 M222 258 l-3 4" stroke="#f7e9b0" stroke-width="2.4" stroke-linecap="round"/>`),
     acc('Heart Wand', 'body', '185 215 70 95', `<path d="M196 290 L214 238" stroke="#df7fae" stroke-width="5" stroke-linecap="round"/><path d="M216 244 C207 236 206 229 211 227 C214 226 216 229 216 231 C216 229 218 226 221 227 C226 229 225 236 216 244 Z" fill="#f06a9e"/>`),
     acc('Snow Wand', 'body', '185 215 70 95', `<path d="M196 290 L214 238" stroke="#8fc3ec" stroke-width="5" stroke-linecap="round"/><g stroke="#bfe9fb" stroke-width="3.4" stroke-linecap="round"><path d="M216 222 L216 244 M205 233 L227 233 M208 225 L224 241 M224 225 L208 241"/></g>`),
     acc('Heart Purse', 'body', '70 280 70 70', `<path d="M105 295 Q88 308 92 326 Q94 338 105 338 Q116 338 118 326 Q122 308 105 295" fill="#f49ac1" stroke="#df7fae" stroke-width="2.5"/><path d="M99 318 C95 314 95 311 97 310 C99 309 100 311 100 312 C100 311 101 309 103 310 C105 311 105 314 101 318 Z" fill="#fff" transform="translate(4 0)"/>`),
@@ -244,7 +283,7 @@ const Dressup = (() => {
     acc('Fairy Wings', 'back', '40 130 220 160', wings('#e8f4fb', '#bcd9ec')),
     acc('Butterfly Wings', 'back', '40 130 220 160', wings('#f9d4e8', '#ef8fbc') + `<circle cx="92" cy="180" r="7" fill="#fff" opacity="0.8"/><circle cx="208" cy="180" r="7" fill="#fff" opacity="0.8"/>`),
     acc('Cozy Scarf', 'body', '115 130 70 60', `<path d="M130 146 Q150 158 170 146 L170 156 Q150 168 130 156 Z" fill="#e85f6e"/><rect x="158" y="152" width="12" height="34" rx="5" fill="#e85f6e"/><path d="M158 180 L162 188 M166 180 L170 188" stroke="#c84252" stroke-width="3"/>`),
-    acc('Golden Bangle', 'body', '180 265 40 30', `<circle cx="196" cy="280" r="8" fill="none" stroke="#e8bb4a" stroke-width="4"/>`),
+    acc('Golden Bangle', 'body', '180 265 40 30', `${GOLD}<circle cx="196" cy="280" r="8" fill="none" stroke="url(#m-gold)" stroke-width="4"/>`),
     acc('Friendship Band', 'body', '85 265 40 30', `<circle cx="104" cy="280" r="8" fill="none" stroke="#f59ac0" stroke-width="4"/><circle cx="104" cy="272" r="2.4" fill="#7fb8e8"/>`),
     acc('Sparkle Belt', 'body', '110 230 80 30', `<path d="M128 242 Q150 250 172 242 L172 250 Q150 258 128 250 Z" fill="#f3c64e"/><circle cx="150" cy="248" r="4.4" fill="#fff"/>`),
   ];
@@ -270,19 +309,39 @@ const Dressup = (() => {
     HAIR_SHAPES.forEach(([name, fn], si) => {
       for (let k = 0; k < 4; k++) {
         const [cn, c, d] = HAIR_COLORS[(si + k * 3) % HAIR_COLORS.length];
-        items.hair.push({ id: `h${si}-${k}`, name: `${cn} ${name}`, ...fn(c, d), thumbBox: '70 0 160 290' });
+        const gid = `hg${si}-${k}`;
+        const parts = fn(`url(#${gid})`, d);
+        // glossy highlight swept across the crown
+        const shine = `<path d="M119 64 Q135 45 152 45" stroke="rgba(255,255,255,0.4)" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+        items.hair.push({
+          id: `h${si}-${k}`, name: `${cn} ${name}`,
+          back: `<defs>${grad(gid, shade(c, 24), shade(c, -16))}</defs>` + parts.back,
+          front: parts.front + shine,
+          thumbBox: '70 0 160 290',
+        });
       }
     });
     DRESS_SHAPES.forEach(([name, fn], si) => {
       for (let k = 0; k < 4; k++) {
         const p = DRESS_PALETTES[(si + k * 3) % DRESS_PALETTES.length];
-        items.dress.push({ id: `d${si}-${k}`, name: `${p[0]} ${name}`, svg: fn(p), thumbBox: '60 130 180 350' });
+        const gid = `dg${si}-${k}`;
+        const satin = [p[0], `url(#${gid})`, p[2], p[3]];
+        items.dress.push({
+          id: `d${si}-${k}`, name: `${p[0]} ${name}`,
+          svg: `<defs>${grad(gid, shade(p[1], 22), shade(p[1], -20))}</defs>` + fn(satin),
+          thumbBox: '60 130 180 350',
+        });
       }
     });
     SHOE_SHAPES.forEach(([name, fn], si) => {
       for (let k = 0; k < 4; k++) {
         const [cn, c, d] = SHOE_COLORS[(si + k * 2) % SHOE_COLORS.length];
-        items.shoes.push({ id: `s${si}-${k}`, name: `${cn} ${name}`, svg: fn(c, d), thumbBox: '105 400 90 85' });
+        const gid = `sg${si}-${k}`;
+        items.shoes.push({
+          id: `s${si}-${k}`, name: `${cn} ${name}`,
+          svg: `<defs>${grad(gid, shade(c, 26), shade(c, -18))}</defs>` + fn(`url(#${gid})`, d),
+          thumbBox: '105 400 90 85',
+        });
       }
     });
     ACCESSORIES.forEach((a, i) => {
@@ -298,7 +357,7 @@ const Dressup = (() => {
 
   let outfit = { hair: null, dress: null, shoes: null, extras: [] };
   let currentCat = 'hair';
-  let stage, itemsBox, tabsBox;
+  let stage, dollWrap, caption, itemsBox, tabsBox;
 
   function find(cat, id) { return ITEMS[cat].find((i) => i.id === id); }
 
@@ -322,7 +381,9 @@ const Dressup = (() => {
   }
 
   function renderDoll() {
-    stage.innerHTML = dollSVG();
+    dollWrap.innerHTML = dollSVG();
+    const dress = outfit.dress && find('dress', outfit.dress);
+    caption.textContent = dress ? `✨ ${dress.name} ✨` : '🍼 Cozy Onesie';
   }
 
   function renderTabs() {
@@ -407,6 +468,21 @@ const Dressup = (() => {
     stage = document.getElementById('dressup-stage');
     tabsBox = document.getElementById('dressup-tabs');
     itemsBox = document.getElementById('dressup-items');
+
+    // boutique stage: doll platform, outfit caption, twinkling sparkles
+    stage.innerHTML = '<div id="doll-wrap"></div><div id="dressup-caption"></div>';
+    dollWrap = document.getElementById('doll-wrap');
+    caption = document.getElementById('dressup-caption');
+    for (let i = 0; i < 7; i++) {
+      const s = document.createElement('span');
+      s.className = 'stage-sparkle';
+      s.textContent = i % 2 ? '✦' : '✧';
+      s.style.left = 5 + Math.random() * 90 + '%';
+      s.style.top = 4 + Math.random() * 86 + '%';
+      s.style.fontSize = 0.7 + Math.random() * 0.9 + 'rem';
+      s.style.animationDelay = Math.random() * 2.6 + 's';
+      stage.appendChild(s);
+    }
     try {
       const saved = JSON.parse(localStorage.getItem(STORE_KEY));
       if (saved) outfit = { hair: null, dress: null, shoes: null, extras: [], ...saved };
