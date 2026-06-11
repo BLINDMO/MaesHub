@@ -74,49 +74,56 @@ const Garden = (() => {
     <path d="M49 60 q7 8 14 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
   </svg>`;
 
-  let area, ground, can;
+  let area, ground, can, drawer, seedBtn;
   let plants = [];
   let critters = [];
   let flowerCount = 0;
   let butterflyCount = 0;
   let rafId = null, lastTime = 0, active = false;
   let timers = [];
-  let canSelected = false;
+  let tool = 'seed'; // exactly one tool is active: 'seed' or 'water'
+
+  function selectTool(t) {
+    tool = t;
+    can.classList.toggle('selected', t === 'water');
+    seedBtn.classList.toggle('selected', t === 'seed');
+    if (t === 'water') drawer.classList.remove('open');
+  }
 
   function init() {
     area = document.getElementById('garden-area');
     ground = document.getElementById('garden-ground');
     can = document.getElementById('garden-can');
+    drawer = document.getElementById('seed-drawer');
+    seedBtn = document.getElementById('garden-seed-btn');
     can.innerHTML = CAN_SVG;
     document.getElementById('garden-sun').innerHTML = SUN_SVG;
 
-    // tap the can to pick it up / put it down
+    // the two tools: tap to switch; tap seeds again to change seed type
     can.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       Sound.click();
-      canSelected = !canSelected;
-      can.classList.toggle('selected', canSelected);
+      selectTool('water');
+    });
+    seedBtn.textContent = selectedSeed.icon;
+    seedBtn.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      Sound.click();
+      if (tool === 'seed') drawer.classList.toggle('open');
+      else selectTool('seed');
     });
 
     ground.addEventListener('pointerdown', (e) => {
       if (e.target !== ground) return;
-      if (canSelected) { Sound.splash(); return; } // watering bare grass is just a splash
-      plantSeed(e);
+      drawer.classList.remove('open');
+      if (tool === 'seed') plantSeed(e);
+      else Sound.splash(); // watering bare grass is just a splash
     });
     document.getElementById('garden-reset').addEventListener('click', () => {
       Sound.pop();
       resetGarden();
     });
 
-    // the seed drawer slides open next to the watering can
-    const drawer = document.getElementById('seed-drawer');
-    const seedBtn = document.getElementById('garden-seed-btn');
-    seedBtn.textContent = selectedSeed.icon;
-    seedBtn.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      Sound.click();
-      drawer.classList.toggle('open');
-    });
     SEEDS.forEach((seed) => {
       const packet = document.createElement('button');
       packet.className = 'seed-packet' + (seed === selectedSeed ? ' selected' : '');
@@ -131,6 +138,7 @@ const Garden = (() => {
       });
       drawer.appendChild(packet);
     });
+    selectTool('seed');
   }
 
   function toast(msg) {
@@ -201,7 +209,7 @@ const Garden = (() => {
     const plant = { el, growing: false, bloomed: false, bar: null, bloom: selectedSeed.bloom };
     el.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
-      if (canSelected) { waterPlant(plant); return; }
+      if (tool === 'water') { waterPlant(plant); return; }
       if (plant.bloomed) { Sound.sparkle(); sparkleBurst(el, 5); }
       else { Sound.click(); el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle'); }
     });
