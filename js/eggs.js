@@ -44,9 +44,30 @@ const Eggs = (() => {
   }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
+  // a sunny meadow behind the eggs: clouds in the sky, flowers in the grass
+  function decorate() {
+    const add = (txt, x, y, cls, size) => {
+      const s = document.createElement('span');
+      s.className = 'field-decor ' + cls;
+      s.textContent = txt;
+      s.style.left = x + '%';
+      s.style.top = y + '%';
+      if (size) s.style.fontSize = size + 'rem';
+      field.appendChild(s);
+    };
+    add('☁️', 8 + Math.random() * 14, 2, 'cloud');
+    add('☁️', 62 + Math.random() * 24, 5, 'cloud');
+    add('🌞', 88, 1, 'cloud', 2.6);
+    const plants = ['🌼', '🌷', '🌾', '☘️', '🍄', '🌻', '🌸', '🌾'];
+    plants.forEach((p, i) => {
+      add(p, 4 + ((i * 37 + Math.random() * 18) % 92), 28 + ((i * 23 + Math.random() * 12) % 64), 'plant-decor', 1.3 + Math.random() * 0.8);
+    });
+  }
+
   function newRound() {
     clearTimers();
     field.innerHTML = '';
+    decorate();
     opened = 0;
     finished = false;
     accepting = false; // no peeking until the wolf has hidden!
@@ -123,7 +144,8 @@ const Eggs = (() => {
     for (let i = 0; i < n; i++) {
       let best = null, bestScore = -1;
       for (let attempt = 0; attempt < 60; attempt++) {
-        const p = { x: 7 + Math.random() * 86, y: 10 + Math.random() * 80 };
+        // keep the eggs on the grass, below the sky line
+        const p = { x: 7 + Math.random() * 86, y: 26 + Math.random() * 64 };
         const px = (p.x / 100) * w, py = (p.y / 100) * h;
         let nearest = Infinity;
         for (const s of spots) {

@@ -98,33 +98,40 @@ const Bridge = (() => {
     const H = area.clientHeight || 600;
     const nRows = Math.min(5 + level, 9);
     const perRow = level >= 3 ? 3 : 2;
-    const riverH = Math.min(140, H * 0.22);
 
-    // a 45° diagonal: equal horizontal and vertical steps per row
-    const startX = Math.max(70, W * 0.1);
-    const startY = H - riverH - 40;
-    const step = Math.min((W - startX - 110) / (nRows + 1), (startY - 70) / (nRows + 1));
-
-    const pos = (i) => ({ x: startX + (i + 1) * step, y: startY - (i + 1) * step });
+    // the bridge spans the whole river, corner to corner
+    const startX = Math.max(90, W * 0.1);
+    const startY = H - 96;
+    const endX = W - Math.max(110, W * 0.12);
+    const topY = 96;
+    const dx = (endX - startX) / (nRows + 1);
+    const dy = (startY - topY) / (nRows + 1);
+    const pos = (i) => ({ x: startX + (i + 1) * dx, y: startY - (i + 1) * dy });
 
     // grassy banks at both ends
     addPad(startX, startY, '🌿');
     const end = pos(nRows);
     endPad = addPad(end.x, end.y, '🏡');
 
-    const plankW = Math.max(78, Math.min(112, step * 1.35));
+    // planks lie across the bridge's width, perpendicular to the crossing
+    const len = Math.hypot(dx, dy);
+    const perpX = dy / len, perpY = dx / len;
+    const plankW = Math.max(72, Math.min(112, Math.min(dx, dy) * 1.6));
+    const spacing = plankW * 0.62 + 18;
     for (let i = 0; i < nRows; i++) {
       const c = pos(i);
       const loose = Math.floor(Math.random() * perRow);
       const rowPlanks = [];
       for (let j = 0; j < perRow; j++) {
-        const x = c.x + (j - (perRow - 1) / 2) * (plankW + 14);
+        const off = (j - (perRow - 1) / 2) * spacing;
+        const x = c.x + perpX * off;
+        const y = c.y + perpY * off;
         const plank = document.createElement('button');
         plank.className = 'plank' + (j === loose ? ' cracked' : '');
         plank.style.width = plankW + 'px';
         plank.style.left = x + 'px';
-        plank.style.top = c.y + 'px';
-        const info = { el: plank, loose: j === loose, x, y: c.y };
+        plank.style.top = y + 'px';
+        const info = { el: plank, loose: j === loose, x, y };
         plank.addEventListener('click', () => stepOn(i, info));
         board.appendChild(plank);
         rowPlanks.push(info);
@@ -205,9 +212,8 @@ const Bridge = (() => {
     Sound.bonk();
 
     later(() => {
-      // the pup tumbles into the river below
-      const riverTop = area.clientHeight - (riverEl.clientHeight || 120) + 26;
-      pupEl.style.setProperty('--fall', (riverTop - plank.y) + 'px');
+      // the pup tumbles straight down into the water under the bridge
+      pupEl.style.setProperty('--fall', '195px');
       pupEl.classList.add('falling');
       Sound.splash();
     }, 250);
@@ -218,8 +224,9 @@ const Bridge = (() => {
         s.className = 'river-splash';
         s.textContent = '💦';
         s.style.left = plank.x + (i - 1.5) * 26 + 'px';
+        s.style.top = plank.y + 165 + 'px';
         s.style.animationDelay = i * 0.06 + 's';
-        riverEl.appendChild(s);
+        board.appendChild(s);
         setTimeout(() => s.remove(), 1200);
       }
     }, 750);

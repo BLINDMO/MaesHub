@@ -9,8 +9,26 @@
 const Garden = (() => {
   const FLOWERS = ['🌸', '🌷', '🌻', '🌼', '🌺', '🪻', '🌹'];
   const BUTTERFLIES = ['🦋', '🐝', '🐞'];
-  const MAX_PLANTS = 10;
+  const MAX_PLANTS = 14;
+  const MAX_UNWATERED = 5; // water your seeds before planting more!
   const GROW_SECONDS = 20;
+
+  // the seed drawer: flowers AND fruits
+  const SEEDS = [
+    { id: 'mix', icon: '✨', name: 'Surprise', bloom: null },
+    { id: 'tulip', icon: '🌷', name: 'Tulip', bloom: '🌷' },
+    { id: 'rose', icon: '🌹', name: 'Rose', bloom: '🌹' },
+    { id: 'sunflower', icon: '🌻', name: 'Sunflower', bloom: '🌻' },
+    { id: 'blossom', icon: '🌸', name: 'Blossom', bloom: '🌸' },
+    { id: 'daisy', icon: '🌼', name: 'Daisy', bloom: '🌼' },
+    { id: 'strawberry', icon: '🍓', name: 'Strawberry', bloom: '🍓' },
+    { id: 'watermelon', icon: '🍉', name: 'Watermelon', bloom: '🍉' },
+    { id: 'apple', icon: '🍎', name: 'Apple', bloom: '🍎' },
+    { id: 'grapes', icon: '🍇', name: 'Grapes', bloom: '🍇' },
+    { id: 'cherry', icon: '🍒', name: 'Cherries', bloom: '🍒' },
+    { id: 'carrot', icon: '🥕', name: 'Carrot', bloom: '🥕' },
+  ];
+  let selectedSeed = SEEDS[0];
   const STAGES = ['', '🌿', '🪴', '🌷']; // stage 0 is the drawn stem sprout
 
   // a fresh stem pushing out of its little dirt mound
@@ -75,7 +93,6 @@ const Garden = (() => {
     // tap the can to pick it up / put it down
     can.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
-      if (can.classList.contains('flying')) return;
       Sound.click();
       canSelected = !canSelected;
       can.classList.toggle('selected', canSelected);
@@ -90,6 +107,38 @@ const Garden = (() => {
       Sound.pop();
       resetGarden();
     });
+
+    // the seed drawer slides open next to the watering can
+    const drawer = document.getElementById('seed-drawer');
+    const seedBtn = document.getElementById('garden-seed-btn');
+    seedBtn.textContent = selectedSeed.icon;
+    seedBtn.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      Sound.click();
+      drawer.classList.toggle('open');
+    });
+    SEEDS.forEach((seed) => {
+      const packet = document.createElement('button');
+      packet.className = 'seed-packet' + (seed === selectedSeed ? ' selected' : '');
+      packet.innerHTML = `<span>${seed.icon}</span><small>${seed.name}</small>`;
+      packet.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        Sound.pop();
+        selectedSeed = seed;
+        seedBtn.textContent = seed.icon;
+        drawer.querySelectorAll('.seed-packet').forEach((p) => p.classList.toggle('selected', p === packet));
+        drawer.classList.remove('open');
+      });
+      drawer.appendChild(packet);
+    });
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('garden-toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => t.classList.add('hidden'), 1800);
   }
 
   function start() {
@@ -132,6 +181,15 @@ const Garden = (() => {
   /* ----- planting & growing ----- */
   function plantSeed(e) {
     if (plants.length >= MAX_PLANTS) return;
+    const unwatered = plants.filter((p) => !p.growing && !p.bloomed).length;
+    if (unwatered >= MAX_UNWATERED) {
+      Sound.bonk();
+      toast('5 seeds are waiting! Water them first! 💧');
+      can.classList.remove('nudge');
+      void can.offsetWidth;
+      can.classList.add('nudge');
+      return;
+    }
     document.getElementById('garden-hint').style.display = 'none';
     Sound.pop();
     const r = area.getBoundingClientRect();
@@ -140,7 +198,7 @@ const Garden = (() => {
     el.innerHTML = SPROUT_SVG; // a stem pushes up out of the dirt first
     el.style.left = (e.clientX - r.left) + 'px';
     el.style.top = (e.clientY - r.top) + 'px';
-    const plant = { el, growing: false, bloomed: false, bar: null };
+    const plant = { el, growing: false, bloomed: false, bar: null, bloom: selectedSeed.bloom };
     el.addEventListener('pointerdown', (ev) => {
       ev.stopPropagation();
       if (canSelected) { waterPlant(plant); return; }
@@ -202,7 +260,7 @@ const Garden = (() => {
     plant.bloomed = true;
     plant.growing = false;
     if (plant.bar) { plant.bar.remove(); plant.bar = null; }
-    plant.el.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
+    plant.el.textContent = plant.bloom || FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
     plant.el.classList.add('bloomed');
     Sound.fanfare();
     sparkleBurst(plant.el, 10);

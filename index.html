@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Mae's Hub 🌈</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 
@@ -163,6 +163,9 @@
     <div id="garden-ground"></div>
     <div id="garden-hint">Tap the grass to plant a magic seed! 🌱<br>Then tap the watering can to pick it up, and tap your plant! 💧</div>
     <div id="garden-can" aria-label="Watering can"></div>
+    <button id="garden-seed-btn" aria-label="Choose seeds">✨</button>
+    <div id="seed-drawer"></div>
+    <div id="garden-toast" class="hidden"></div>
   </div>
   <button id="garden-reset" class="btn-pill">New Garden 🌱</button>
 </div>
@@ -175,13 +178,15 @@
     <div id="bridge-hud">Level <span id="bridge-level">1</span> 🏅 <span id="bridge-best">1</span></div>
   </header>
   <div id="bridge-area">
+    <div id="bridge-river">
+      <span class="river-float" style="left:12%; top:18%; animation-delay:-2s">🐟</span>
+      <span class="river-float" style="left:64%; top:72%; animation-delay:-5s">🦆</span>
+      <span class="river-float" style="left:30%; top:84%; animation-delay:-8s">🐸</span>
+      <span class="river-float" style="left:84%; top:30%; animation-delay:-4s">🐟</span>
+      <span class="river-float" style="left:48%; top:40%; animation-delay:-7s">🪷</span>
+    </div>
     <div id="bridge-board"></div>
     <div id="bridge-pup" class="hidden"></div>
-    <div id="bridge-river">
-      <span class="river-float" style="left:18%; animation-delay:-2s">🐟</span>
-      <span class="river-float" style="left:55%; animation-delay:-5s">🦆</span>
-      <span class="river-float" style="left:80%; animation-delay:-8s">🐸</span>
-    </div>
   </div>
 
   <div id="bridge-start-overlay" class="overlay">
@@ -406,19 +411,19 @@
 </div>
 
 <script src="js/vendor/matter.min.js"></script>
-<script src="js/audio.js?v=8"></script>
-<script src="js/confetti.js?v=8"></script>
-<script src="js/characters.js?v=8"></script>
-<script src="js/keypad.js?v=8"></script>
-<script src="js/blocks.js?v=8"></script>
-<script src="js/road.js?v=8"></script>
-<script src="js/eggs.js?v=8"></script>
-<script src="js/garden.js?v=8"></script>
-<script src="js/bridge.js?v=8"></script>
-<script src="js/dressup.js?v=8"></script>
-<script src="js/camera.js?v=8"></script>
-<script src="js/videos.js?v=8"></script>
-<script src="js/night.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/audio.js?v=9"></script>
+<script src="js/confetti.js?v=9"></script>
+<script src="js/characters.js?v=9"></script>
+<script src="js/keypad.js?v=9"></script>
+<script src="js/blocks.js?v=9"></script>
+<script src="js/road.js?v=9"></script>
+<script src="js/eggs.js?v=9"></script>
+<script src="js/garden.js?v=9"></script>
+<script src="js/bridge.js?v=9"></script>
+<script src="js/dressup.js?v=9"></script>
+<script src="js/camera.js?v=9"></script>
+<script src="js/videos.js?v=9"></script>
+<script src="js/night.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 </body>
 </html>
