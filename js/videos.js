@@ -42,8 +42,10 @@ const Videos = (() => {
     { id: 'yCjJyiqpAuU', title: 'Twinkle Twinkle Little Star', channel: 'Super Simple Songs' },
   ];
 
-  let state = { custom: [], blocked: [], removedDefaults: [] };
+  let state = { custom: [], blocked: [], removedDefaults: [], favorites: [] };
   const PASSCODE = '0617';
+  let playlist = [];   // current visible order, used by the Next button
+  let nowPlaying = null;
 
   function load() {
     try {
@@ -65,32 +67,92 @@ const Videos = (() => {
   function visibleVideos() { return allVideos().filter((v) => !isBlocked(v)); }
 
   /* ----- kid-facing grid & player ----- */
+  function isFav(id) { return state.favorites.includes(id); }
+
+  function toggleFav(id) {
+    if (isFav(id)) state.favorites = state.favorites.filter((f) => f !== id);
+    else state.favorites.push(id);
+    save();
+    renderGrid();
+  }
+
+  // deterministic per-day shuffle so "Today's Picks" feels fresh each morning
+  function todaysPicks(vids, n) {
+    const day = Math.floor(Date.now() / 86400000);
+    const rand = (i) => {
+      const s = Math.sin((day + 1) * 9301 + i * 49297) * 233280;
+      return s - Math.floor(s);
+    };
+    return vids
+      .map((v, i) => ({ v, k: rand(i) }))
+      .sort((a, b) => a.k - b.k)
+      .slice(0, n)
+      .map((x) => x.v);
+  }
+
+  function makeCard(v) {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.innerHTML = `
+      <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">
+      <button class="fav-btn" aria-label="favorite"></button>
+      <span class="v-title"></span>
+      <span class="v-channel"></span>`;
+    card.querySelector('.v-title').textContent = v.title;
+    card.querySelector('.v-channel').textContent = v.channel;
+    const fav = card.querySelector('.fav-btn');
+    fav.textContent = isFav(v.id) ? '💖' : '🤍';
+    fav.addEventListener('click', (e) => {
+      e.stopPropagation();
+      Sound.sparkle();
+      toggleFav(v.id);
+    });
+    card.addEventListener('click', () => play(v.id));
+    return card;
+  }
+
   function renderGrid() {
     const grid = document.getElementById('video-grid');
     grid.innerHTML = '';
     const vids = visibleVideos();
     document.getElementById('videos-empty').classList.toggle('hidden', vids.length > 0);
-    for (const v of vids) {
-      const card = document.createElement('button');
-      card.className = 'video-card';
-      card.innerHTML = `
-        <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">
-        <span class="v-title"></span>
-        <span class="v-channel"></span>`;
-      card.querySelector('.v-title').textContent = v.title;
-      card.querySelector('.v-channel').textContent = v.channel;
-      card.addEventListener('click', () => play(v.id));
-      grid.appendChild(card);
-    }
+
+    const favs = vids.filter((v) => isFav(v.id));
+    const rest = vids.filter((v) => !isFav(v.id));
+    const picks = todaysPicks(rest, 6);
+
+    const section = (title, list) => {
+      if (!list.length) return;
+      const h = document.createElement('h3');
+      h.className = 'section-title';
+      h.textContent = title;
+      grid.appendChild(h);
+      list.forEach((v) => grid.appendChild(makeCard(v)));
+    };
+    const others = rest.filter((v) => !picks.includes(v));
+    section('💖 Mae’s Favorites', favs);
+    section('✨ Today’s Picks', picks);
+    section('🎬 More Videos', others);
+
+    // the order she sees is the order the Next button walks through
+    playlist = favs.concat(picks, others).map((v) => v.id);
   }
 
   function play(id) {
     Sound.click();
+    nowPlaying = id;
     const frame = document.getElementById('player-frame');
     frame.innerHTML = `<iframe
       src="https://www.youtube-nocookie.com/embed/${id}?rel=0&autoplay=1&playsinline=1"
       title="video player" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
     document.getElementById('player-overlay').classList.remove('hidden');
+  }
+
+  function playNext() {
+    if (!playlist.length) return closePlayer();
+    Sound.pop();
+    const idx = playlist.indexOf(nowPlaying);
+    play(playlist[(idx + 1) % playlist.length]);
   }
 
   function closePlayer() {
@@ -230,6 +292,7 @@ const Videos = (() => {
   function init() {
     load();
     document.getElementById('player-close').addEventListener('click', closePlayer);
+    document.getElementById('player-next').addEventListener('click', playNext);
     document.getElementById('videos-grownups-btn').addEventListener('click', openGate);
     document.getElementById('gate-go').addEventListener('click', tryGate);
     document.getElementById('gate-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryGate(); });

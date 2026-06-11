@@ -1,45 +1,50 @@
 /* ============ Game 2: Road Hopper ============
- * A structured course: hop from the START line at the bottom to the
- * checkered FINISH line at the top. The whole course fits on screen,
- * lanes alternate direction with evenly spaced cars, and each finished
- * crossing unlocks a slightly busier level.
+ * Classic frogger-style course: a START line, 10 lanes of traffic, a
+ * flowery rest meadow, 10 more lanes, then the checkered FINISH line.
+ * The course is fixed (never infinite) and the camera scrolls gently as
+ * you hop. Play as one of five cartoon pups.
  */
 const Road = (() => {
   const COLS = 9;
-  const ROWS = 13;             // row 0 = start, row 12 = finish
-  const FINISH_ROW = ROWS - 1;
+  const LANES_PER_HALF = 10;
+  // row map: 0 start | 1-10 roads | 11 rest meadow | 12-21 roads | 22 finish
+  const REST_ROW = LANES_PER_HALF + 1;
+  const FINISH_ROW = LANES_PER_HALF * 2 + 2;
+  const ROWS = FINISH_ROW + 1;
   const CARS = ['🚗', '🚕', '🚙', '🚓', '🚌', '🚜', '🛻'];
   const FLOWERS = ['🌼', '🌷', '🌸', '🌻'];
   const BEST_KEY = 'maeshub.road.bestlevel';
 
-  // tidy lane layouts: which rows are roads, by difficulty tier
-  const LAYOUTS = [
-    [3, 5, 7, 9],                  // level 1: four single roads
-    [2, 4, 6, 8, 10],              // level 2: five single roads
-    [2, 3, 5, 7, 9, 10],           // level 3: two pairs + singles
-    [2, 3, 5, 6, 8, 9, 11],        // level 4+: three pairs + one
-  ];
-
   let canvas, ctx;
-  let cell = 50, boardX = 0, boardY = 0;
-  let lanes = [];   // {row, dir, speed, emoji, cars:[x], span}
+  let cell = 50, boardX = 0, topY = 0, viewH = 0;
+  let lanes = [];
   let player = null;
+  let cameraRow = 0;
   let level = 1;
-  let character = '🐔';
+  let pup = null; // {svg, img, name}
   let running = false, rafId = null, lastTime = 0;
+
+  function isRoad(r) { return r > 0 && r < FINISH_ROW && r !== REST_ROW; }
 
   function init() {
     canvas = document.getElementById('road-canvas');
     ctx = canvas.getContext('2d');
 
-    document.querySelectorAll('.char-btn').forEach((btn) => {
+    const row = document.getElementById('road-char-row');
+    Chars.PUPS.forEach((p) => {
+      const btn = document.createElement('button');
+      btn.className = 'char-btn';
+      btn.innerHTML = p.svg;
+      btn.title = p.name;
       btn.addEventListener('click', () => {
         Sound.fanfare();
-        character = btn.dataset.char;
+        pup = { ...p, img: Chars.toImage(p.svg) };
         document.getElementById('road-char-overlay').classList.add('hidden');
         newRun();
       });
+      row.appendChild(btn);
     });
+
     document.getElementById('road-retry').addEventListener('click', () => {
       Sound.click();
       document.getElementById('road-over-overlay').classList.add('hidden');
@@ -95,31 +100,37 @@ const Road = (() => {
   function resize() {
     canvas.width = innerWidth;
     canvas.height = innerHeight;
-    const headerH = 80, footerH = 50;
-    cell = Math.min(innerWidth / COLS, (innerHeight - headerH - footerH) / ROWS);
+    cell = Math.max(44, Math.min(78, innerWidth / COLS));
     boardX = (innerWidth - COLS * cell) / 2;
-    boardY = headerH + (innerHeight - headerH - footerH - ROWS * cell) / 2;
+    topY = 74;            // below the header
+    viewH = innerHeight - topY - 44;
   }
+
+  function visibleRows() { return viewH / cell; }
 
   function newRun() {
     resize();
     updateHud();
-    const layout = LAYOUTS[Math.min(level - 1, LAYOUTS.length - 1)];
-    const boardW = COLS * cell;
-    const speed = cell * (0.85 + 0.12 * Math.min(level - 1, 8));
-    const carCount = level >= 3 ? 3 : 2;
-    lanes = layout.map((row, i) => {
-      const span = boardW + cell * 4;
-      return {
-        row,
-        dir: i % 2 === 0 ? 1 : -1,                 // alternating, predictable
-        speed: speed * (i % 2 === 0 ? 1 : 0.85),   // two calm tempos, no chaos
+    // gentle speeds: a 4-year-old needs time to plan ten lanes in a row
+    const base = cell * (0.55 + 0.09 * Math.min(level - 1, 8));
+    const carCount = level >= 4 ? 3 : 2;
+    lanes = [];
+    let i = 0;
+    for (let r = 1; r < FINISH_ROW; r++) {
+      if (!isRoad(r)) continue;
+      const span = COLS * cell + cell * 5;
+      lanes.push({
+        row: r,
+        dir: i % 2 === 0 ? 1 : -1,
+        speed: base * (i % 3 === 0 ? 1.15 : i % 3 === 1 ? 0.85 : 1),
         emoji: CARS[(level + i) % CARS.length],
         span,
-        cars: Array.from({ length: carCount }, (_, k) => (span / carCount) * k),
-      };
-    });
+        cars: Array.from({ length: carCount }, (_, k) => (span / carCount) * k + (i % 2) * cell),
+      });
+      i++;
+    }
     player = { col: Math.floor(COLS / 2), row: 0, hop: null };
+    cameraRow = 0;
     running = true;
     lastTime = performance.now();
     if (rafId) cancelAnimationFrame(rafId);
@@ -133,7 +144,6 @@ const Road = (() => {
     document.getElementById('road-best').textContent = Math.max(best, level);
   }
 
-  /* ----- input ----- */
   function hop(dx, dy) {
     if (player.hop && player.hop.t < 0.7) return;
     const nc = player.col + dx;
@@ -145,7 +155,6 @@ const Road = (() => {
     player.row = nr;
   }
 
-  /* ----- loop ----- */
   function loop(now) {
     if (!running) return;
     const dt = Math.min((now - lastTime) / 1000, 0.05);
@@ -161,6 +170,7 @@ const Road = (() => {
       if (player.hop.t >= 1) {
         player.hop = null;
         if (player.row === FINISH_ROW) return win();
+        if (player.row === REST_ROW) Sound.sparkle(); // made it to the meadow!
       }
     }
     for (const lane of lanes) {
@@ -168,12 +178,13 @@ const Road = (() => {
         lane.cars[i] = (lane.cars[i] + lane.dir * lane.speed * dt + lane.span) % lane.span;
       }
     }
+    // camera keeps the pup about a third of the way up the view
+    const target = Math.max(0, Math.min(player.row - visibleRows() * 0.35, ROWS - visibleRows()));
+    cameraRow += (target - cameraRow) * Math.min(1, dt * 5);
     checkCollision();
   }
 
-  function carScreenX(lane, t) {
-    return boardX - cell * 2 + t;
-  }
+  function carScreenX(lane, t) { return boardX - cell * 2.5 + t; }
 
   function checkCollision() {
     if (player.hop && player.hop.t < 0.5) return;
@@ -191,15 +202,16 @@ const Road = (() => {
     throwConfetti(140);
     updateHud();
     document.getElementById('road-win-text').textContent =
-      `${character} finished level ${level}! Ready for level ${level + 1}?`;
+      `${pup.name} crossed all 20 lanes on level ${level}! Ready for level ${level + 1}?`;
     document.getElementById('road-win-overlay').classList.remove('hidden');
   }
 
   function gameOver() {
     running = false;
     Sound.bonk();
+    const half = player.row > REST_ROW ? 'almost home' : 'on the way to the meadow';
     document.getElementById('road-over-score').textContent =
-      `${character} almost made it across level ${level}!`;
+      `${pup.name} got bonked ${half} on level ${level}. Try again!`;
     document.getElementById('road-over-overlay').classList.remove('hidden');
   }
 
@@ -209,28 +221,30 @@ const Road = (() => {
     return s - Math.floor(s);
   }
 
-  function rowY(r) { return boardY + (ROWS - 1 - r) * cell; } // row 0 at the bottom
+  // world: row 0 sits at the bottom; camera scrolls in row units
+  function rowY(r) { return topY + viewH - (r - cameraRow + 1) * cell; }
 
   function draw() {
     const w = canvas.width, h = canvas.height;
     ctx.fillStyle = '#6fbf63';
     ctx.fillRect(0, 0, w, h);
-
-    const isRoad = (r) => lanes.some((l) => l.row === r);
     const boardW = COLS * cell;
 
-    // board panel with a soft border
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.fillRect(boardX - 8, boardY - 8, boardW + 16, ROWS * cell + 16);
+    // soft side rails so the course reads as one track
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillRect(boardX - 8, 0, 8, h);
+    ctx.fillRect(boardX + boardW, 0, 8, h);
 
-    for (let r = 0; r < ROWS; r++) {
+    const lo = Math.max(0, Math.floor(cameraRow) - 1);
+    const hi = Math.min(ROWS - 1, Math.ceil(cameraRow + visibleRows()) + 1);
+    for (let r = lo; r <= hi; r++) {
       const y = rowY(r);
       if (r === FINISH_ROW) {
         drawFinishRow(y, boardW);
       } else if (isRoad(r)) {
         ctx.fillStyle = '#4a4a58';
         ctx.fillRect(boardX, y, boardW, cell + 1);
-        if (isRoad(r + 1) && r + 1 !== FINISH_ROW) {
+        if (isRoad(r + 1)) {
           ctx.strokeStyle = 'rgba(255,255,255,0.7)';
           ctx.lineWidth = 4;
           ctx.setLineDash([cell * 0.45, cell * 0.4]);
@@ -241,44 +255,47 @@ const Road = (() => {
           ctx.setLineDash([]);
         }
       } else {
-        ctx.fillStyle = r % 2 === 0 ? '#8fd97a' : '#84d36e';
+        ctx.fillStyle = r === REST_ROW ? '#a3e58c' : '#8fd97a';
         ctx.fillRect(boardX, y, boardW, cell + 1);
-        ctx.font = `${cell * 0.4}px serif`;
+        ctx.font = `${cell * 0.42}px serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        for (let i = 0; i < 2; i++) {
-          if (seeded(r * 13 + i * 7) < 0.6) {
-            const fl = FLOWERS[Math.floor(seeded(r * 31 + i) * FLOWERS.length)];
-            const fx = boardX + (0.5 + Math.floor(seeded(r * 53 + i * 17) * COLS)) * cell;
-            ctx.fillText(fl, fx, y + cell * 0.5);
+        if (r === REST_ROW) {
+          // the flowery rest meadow halfway through
+          for (let i = 0; i < COLS; i += 2) {
+            const fl = FLOWERS[Math.floor(seeded(i * 31) * FLOWERS.length)];
+            ctx.fillText(fl, boardX + (i + 0.5) * cell, y + cell * 0.5);
           }
+          ctx.fillText('🦋', boardX + boardW * 0.7, y + cell * 0.3);
+        } else if (r === 0) {
+          drawStartLine(y, boardW);
         }
-        if (r === 0) drawStartLine(y, boardW);
       }
     }
 
-    // cars (clipped to the board so they enter/exit cleanly)
+    // cars
     ctx.save();
     ctx.beginPath();
-    ctx.rect(boardX, boardY, boardW, ROWS * cell);
+    ctx.rect(boardX, 0, boardW, h);
     ctx.clip();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = `${cell * 1.0}px serif`;
     for (const lane of lanes) {
       const y = rowY(lane.row) + cell * 0.5;
+      if (y < -cell || y > h + cell) continue;
       for (const t of lane.cars) {
         const x = carScreenX(lane, t);
         ctx.save();
         ctx.translate(x, y);
-        if (lane.dir > 0) ctx.scale(-1, 1); // car emojis face left by default
+        if (lane.dir > 0) ctx.scale(-1, 1);
         ctx.fillText(lane.emoji, 0, 0);
         ctx.restore();
       }
     }
     ctx.restore();
 
-    // player
+    // the pup
     let col = player.col, row = player.row, lift = 0;
     if (player.hop) {
       const t = Math.min(player.hop.t, 1);
@@ -290,18 +307,18 @@ const Road = (() => {
     const py = rowY(row) + cell * 0.5;
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
     ctx.beginPath();
-    ctx.ellipse(px, py + cell * 0.32, cell * 0.3, cell * 0.09, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, py + cell * 0.4, cell * 0.3, cell * 0.09, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.font = `${cell * 0.82}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(character, px, py - lift);
+    if (pup && pup.img.complete) {
+      const s = cell * 1.04;
+      ctx.drawImage(pup.img, px - s / 2, py - lift - s * 0.58, s, s * 1.1);
+    }
   }
 
   function drawStartLine(y, boardW) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(boardX, y + cell - 8, boardW, 6);
-    ctx.font = `700 ${cell * 0.42}px Fredoka, sans-serif`;
+    ctx.font = `700 ${cell * 0.42}px "Lilita One", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#2c6e1f';

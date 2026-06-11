@@ -5,6 +5,8 @@
     'screen-road': Road,
     'screen-eggs': Eggs,
     'screen-garden': Garden,
+    'screen-dressup': Dressup,
+    'screen-camera': CameraStudio,
     'screen-videos': Videos,
   };
   let current = 'screen-home';
@@ -18,7 +20,7 @@
     if (mod && mod.start) mod.start();
   }
 
-  document.querySelectorAll('.menu-card').forEach((card) => {
+  document.querySelectorAll('.menu-card[data-target]').forEach((card) => {
     card.addEventListener('click', () => {
       Sound.fanfare();
       show(card.dataset.target);
@@ -36,4 +38,5 @@
   document.addEventListener('gesturestart', (e) => e.preventDefault());
 
   Object.values(modules).forEach((m) => m.init && m.init());
+  Night.init();
 })();

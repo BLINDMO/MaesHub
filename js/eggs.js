@@ -68,28 +68,39 @@ const Eggs = (() => {
       eggs.push(egg);
     }
 
-    // the wolf trots in...
+    // the wolf trots in on four legs...
     const wolf = document.createElement('div');
     wolf.id = 'eggs-wolf';
-    wolf.textContent = '🐺';
-    wolf.style.left = '-12%';
-    wolf.style.top = '50%';
+    wolf.innerHTML = Chars.wolfSVG();
+    wolf.style.left = '-15%';
+    wolf.style.top = '52%';
     field.appendChild(wolf);
     requestAnimationFrame(() => {
       wolf.classList.add('walking');
-      wolf.style.left = '46%';
+      wolf.style.left = '42%';
     });
 
-    // ...dives into the pile...
+    // ...crouches, springs, and DIVES into the pile...
     later(() => {
       wolf.classList.remove('walking');
       wolf.classList.add('diving');
       Sound.growl();
     }, 2600);
 
-    // ...and the eggs scatter everywhere!
+    // ...lands with a thump and a dust puff, and the eggs burst outward!
     later(() => {
       wolf.remove();
+      for (let i = 0; i < 5; i++) {
+        const puff = document.createElement('span');
+        puff.className = 'dust-puff';
+        puff.textContent = '💨';
+        puff.style.left = (44 + (i - 2) * 5) + '%';
+        puff.style.top = (50 + (Math.random() - 0.5) * 8) + '%';
+        field.appendChild(puff);
+        setTimeout(() => puff.remove(), 900);
+      }
+      field.classList.add('shake');
+      setTimeout(() => field.classList.remove('shake'), 450);
       Sound.pop();
       eggs.forEach((egg, i) => {
         egg.style.transitionDelay = (Math.random() * 0.35) + 's';
@@ -97,12 +108,12 @@ const Eggs = (() => {
         egg.style.top = spots[i].y + '%';
         egg.style.rotate = (Math.random() * 36 - 18) + 'deg';
       });
-    }, 3400);
+    }, 3500);
 
     later(() => {
       eggs.forEach((egg) => { egg.style.transitionDelay = '0s'; });
       accepting = true;
-    }, 4500);
+    }, 4600);
   }
 
   function scatter(n) {
@@ -137,7 +148,8 @@ const Eggs = (() => {
       egg.classList.add('opened');
       egg.disabled = true;
       if (i === wolfIndex) {
-        egg.textContent = '🐺';
+        egg.innerHTML = Chars.wolfHeadSVG();
+        egg.classList.add('wolf-egg');
         Sound.growl();
         finished = true;
         later(() => showResult(false), 700);
@@ -149,8 +161,8 @@ const Eggs = (() => {
         if (opened === TOTAL - 1) {
           finished = true;
           field.querySelectorAll('.egg:not(.opened)').forEach((e) => {
-            e.classList.add('wiggle', 'opened');
-            e.textContent = '🐺';
+            e.classList.add('wiggle', 'opened', 'wolf-egg');
+            e.innerHTML = Chars.wolfHeadSVG();
           });
           Sound.fanfare();
           throwConfetti(160);

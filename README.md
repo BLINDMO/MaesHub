@@ -30,25 +30,44 @@ crayon button opens a drawing pad — whatever Mae draws becomes a real
 physics block that drops in too. Drag blocks onto the trash can to remove
 them.
 
-### 🐔 Road Hopper
-A structured lane-crossing course: hop from the **START** line at the
-bottom to the checkered **FINISH** line at the top — the whole course fits
-on one screen. Lanes alternate direction with evenly spaced cars, and each
-finished crossing unlocks a slightly busier level. Pick a character
-(chicken, bunny, duck or kitty); tap to hop forward, tap the screen edges
-to sidestep.
+### 🐶 Road Hopper
+Classic frogger-style course: START line, **10 lanes of traffic, a flowery
+rest meadow, 10 more lanes**, then the checkered FINISH line — never
+infinite. Play as one of five hand-drawn cartoon pups (blue heeler, police
+pup, fire pup and friends). Tap to hop forward, tap the screen edges to
+sidestep; each crossing unlocks a slightly busier level.
 
 ### 🥚 Egg Surprise
-Press Start: 25 colorful eggs pile up in the middle, the wolf trots in,
-**dives into the pile**, and the eggs scatter all over the screen. Open
-eggs to find all 24 baby chicks — without opening the wolf's egg!
+Press Start: 25 colorful eggs pile up in the middle, a proper four-legged
+SVG wolf trots in (friendly, not scary), **leaps and dives into the pile**
+with a dust-puff landing, and the eggs scatter everywhere. Find all 24
+baby chicks without opening the wolf's egg!
 
 ### 🌸 Magic Garden
-Two tools: seeds 🌱 and the water pail 🪣. Plant seeds in the grass, then
-switch to the pail and water them — each plant grows on its own over 20
-seconds (sprout → leaves → bud) until it blooms into a big, glowing,
-swaying flower. Blooms attract butterflies to catch, and five flowers earn
-a rainbow. No way to lose.
+Tap the grass to plant seeds, then **pick up the watering can and carry it
+to a plant**. Watering starts a 20-second magic grow with a little progress
+bar — sprout, leaves, bud — until it blooms into a big glowing flower.
+Blooms attract butterflies; five flowers earn a rainbow. No way to lose.
+
+### 👗 Dress-Up Studio
+A princess mannequin with a real boutique: **40 hairstyles, 32 dresses,
+32 pairs of shoes and 34 accessories** (all original SVG art). With
+nothing selected she wears her plain onesie. Surprise-shuffle button,
+multi-select accessories, and the outfit is saved on the device.
+
+### 📸 Camera Studio
+Take photos with the device camera (front or back), then decorate them:
+chunky crayon drawing in 9 colors plus 16 stamp stickers. Save downloads
+the masterpiece as a PNG. If the camera isn't allowed, a pastel canvas
+appears so drawing still works.
+
+### 🌙 Nighttime Countdown
+Parent-locked bedtime timer (passcode-protected tile). A parent picks the
+playtime (5–60 min); a small persistent countdown sits at the top while
+Mae plays anything. At 5 minutes a popup warns her, at 60 seconds the
+timer blinks and the screen slowly fades to black, and at zero the sleepy
+goodnight pup takes over. The lock survives app reloads and only opens
+after **10 quick taps + the passcode**.
 
 ### 📺 Mae's Videos
 A curated YouTube grid. Kids only see approved videos; playback uses the
@@ -56,7 +75,10 @@ privacy-enhanced `youtube-nocookie.com` embed with related videos limited to
 the same channel.
 
 Comes preloaded with PAW Patrol, Max & Ruby, Danny Go!, Bluey and Gabby's
-Dollhouse episodes plus a few songs.
+Dollhouse episodes plus a few songs. The grid is arranged like a streaming
+home screen: **Mae's Favorites** (tap the heart on any card), **Today's
+Picks** (rotates daily so it feels fresh), and More Videos. While a video
+plays, a big red ✖ button skips to the next one.
 
 **Grown-Ups panel** (the 🔒 button, protected by a 4-digit parent
 passcode — change it via `PASSCODE` at the top of `js/videos.js`):

@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Mae's Hub 🌈</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
       <span class="card-emoji">🧱</span><span class="card-label">Block Builder</span>
     </button>
     <button class="menu-card card-road" data-target="screen-road">
-      <span class="card-emoji">🐔</span><span class="card-label">Road Hopper</span>
+      <span class="card-emoji">🐶</span><span class="card-label">Road Hopper</span>
     </button>
     <button class="menu-card card-eggs" data-target="screen-eggs">
       <span class="card-emoji">🥚</span><span class="card-label">Egg Surprise</span>
@@ -30,8 +30,17 @@
     <button class="menu-card card-garden" data-target="screen-garden">
       <span class="card-emoji">🌸</span><span class="card-label">Magic Garden</span>
     </button>
+    <button class="menu-card card-dressup" data-target="screen-dressup">
+      <span class="card-emoji">👗</span><span class="card-label">Dress-Up</span>
+    </button>
+    <button class="menu-card card-camera" data-target="screen-camera">
+      <span class="card-emoji">📸</span><span class="card-label">Camera Studio</span>
+    </button>
     <button class="menu-card card-videos" data-target="screen-videos">
       <span class="card-emoji">📺</span><span class="card-label">Mae's Videos</span>
+    </button>
+    <button class="menu-card card-night" id="night-tile">
+      <span class="card-emoji">🌙<span id="night-lock-icon">🔒</span></span><span class="card-label">Nighttime</span>
     </button>
   </div>
 </div>
@@ -72,21 +81,16 @@
 <div id="screen-road" class="screen">
   <header class="game-header">
     <button class="btn-back" aria-label="Back">⬅️</button>
-    <h2>🐔 Road Hopper</h2>
+    <h2>🐶 Road Hopper</h2>
     <div id="road-hud">Level <span id="road-level">1</span> 🏅 <span id="road-best">0</span></div>
   </header>
   <canvas id="road-canvas"></canvas>
-  <div id="road-hint">Hop from START to the FINISH line! 🏁 Tap the sides to step over 👣</div>
+  <div id="road-hint">Hop from START to the FINISH line! 🏁 Rest in the middle meadow! 🌼</div>
 
   <div id="road-char-overlay" class="overlay">
     <div class="modal-card">
       <h3>Who wants to cross the road?</h3>
-      <div class="char-row">
-        <button class="char-btn" data-char="🐔">🐔</button>
-        <button class="char-btn" data-char="🐰">🐰</button>
-        <button class="char-btn" data-char="🦆">🦆</button>
-        <button class="char-btn" data-char="🐱">🐱</button>
-      </div>
+      <div class="char-row" id="road-char-row"></div>
     </div>
   </div>
 
@@ -154,13 +158,50 @@
     <div id="garden-rainbow" class="hidden">🌈</div>
     <div id="garden-sky"></div>
     <div id="garden-ground"></div>
-    <div id="garden-hint">Pick the seeds 🌱 and tap the grass to plant!<br>Then pick the pail 🪣 and water your plant — it grows all by itself! ✨</div>
-    <div id="garden-tools">
-      <button class="tool-btn selected" data-tool="seed" aria-label="Seeds">🌱</button>
-      <button class="tool-btn" data-tool="water" aria-label="Water pail">🪣</button>
-    </div>
+    <div id="garden-hint">Tap the grass to plant a magic seed! 🌱<br>Then carry the watering can to your plant and watch it grow! 💧</div>
+    <div id="garden-can" aria-label="Watering can"></div>
   </div>
   <button id="garden-reset" class="btn-pill">New Garden 🌱</button>
+</div>
+
+<!-- ============ DRESS-UP ============ -->
+<div id="screen-dressup" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>👗 Dress-Up</h2>
+    <div>
+      <button id="dressup-shuffle" class="btn-pill">Surprise! 🎲</button>
+      <button id="dressup-reset" class="btn-pill">Reset ✨</button>
+    </div>
+  </header>
+  <div id="dressup-main">
+    <div id="dressup-stage"></div>
+    <div id="dressup-panel">
+      <div id="dressup-tabs"></div>
+      <div id="dressup-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CAMERA STUDIO ============ -->
+<div id="screen-camera" class="screen">
+  <header class="game-header">
+    <button class="btn-back" aria-label="Back">⬅️</button>
+    <h2>📸 Camera Studio</h2>
+    <button id="camera-save" class="btn-pill hidden">Save 💾</button>
+  </header>
+  <div id="camera-stage">
+    <video id="camera-video" autoplay playsinline muted></video>
+    <canvas id="camera-canvas" class="hidden"></canvas>
+    <div id="camera-message" class="hidden"></div>
+    <button id="camera-snap" aria-label="Take photo">📸</button>
+    <button id="camera-flip" aria-label="Flip camera">🔄</button>
+    <button id="camera-retake" class="btn-pill hidden">New Photo 📸</button>
+  </div>
+  <div id="camera-toolbar" class="hidden">
+    <div id="camera-colors"></div>
+    <div id="camera-stickers"></div>
+  </div>
 </div>
 
 <!-- ============ VIDEOS ============ -->
@@ -177,6 +218,7 @@
     <div id="player-box">
       <button id="player-close" aria-label="Close video">✖️</button>
       <div id="player-frame"></div>
+      <button id="player-next" aria-label="Next video"><span class="next-x">✖</span> Next one!</button>
     </div>
   </div>
 
@@ -226,14 +268,66 @@
   </div>
 </div>
 
+<!-- ============ NIGHTTIME (global) ============ -->
+<div id="night-bar" class="hidden">🌙 <span id="night-time">00:00</span></div>
+<div id="night-dim" class="hidden"></div>
+
+<div id="night-gate" class="overlay hidden">
+  <div class="modal-card">
+    <h3>🌙 Nighttime — Grown-Ups Only</h3>
+    <p>Enter the parent passcode 🔑</p>
+    <input id="night-code" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+    <div class="modal-buttons">
+      <button id="night-gate-cancel" class="btn-pill btn-soft">Go Back</button>
+      <button id="night-gate-go" class="btn-pill btn-go">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<div id="night-setup" class="overlay hidden">
+  <div class="modal-card">
+    <h3>🌙 Nighttime Countdown</h3>
+    <p id="night-setup-text">How much playtime until bedtime?</p>
+    <div id="night-presets"></div>
+    <div class="modal-buttons" id="night-active-buttons">
+      <button id="night-extend" class="btn-pill btn-soft hidden">+5 minutes</button>
+      <button id="night-end" class="btn-pill btn-soft hidden">End timer</button>
+      <button id="night-setup-close" class="btn-pill btn-soft">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="night-warning" class="overlay hidden">
+  <div class="modal-card">
+    <div class="big-emoji">🌙⏰</div>
+    <h3>5 more minutes of playtime!</h3>
+    <p>Almost time to get sleepy…</p>
+    <button id="night-warning-ok" class="btn-pill btn-go btn-huge">Okay! 💜</button>
+  </div>
+</div>
+
+<div id="night-lock" class="hidden">
+  <div id="night-lock-art"></div>
+  <p id="night-lock-msg">Wow that was great playing! I can’t wait to sleep and be rested to play with you tomorrow!!!!</p>
+  <div id="night-stars" aria-hidden="true">✦ ✧ ⋆ ✦ ⋆ ✧ ✦</div>
+  <div id="night-unlock-box" class="hidden">
+    <input id="night-unlock-code" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+    <button id="night-unlock-go" class="btn-pill btn-go">Unlock</button>
+  </div>
+</div>
+
 <script src="js/vendor/matter.min.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/confetti.js"></script>
-<script src="js/blocks.js"></script>
-<script src="js/road.js"></script>
-<script src="js/eggs.js"></script>
-<script src="js/garden.js"></script>
-<script src="js/videos.js"></script>
-<script src="js/app.js"></script>
+<script src="js/audio.js?v=4"></script>
+<script src="js/confetti.js?v=4"></script>
+<script src="js/characters.js?v=4"></script>
+<script src="js/blocks.js?v=4"></script>
+<script src="js/road.js?v=4"></script>
+<script src="js/eggs.js?v=4"></script>
+<script src="js/garden.js?v=4"></script>
+<script src="js/dressup.js?v=4"></script>
+<script src="js/camera.js?v=4"></script>
+<script src="js/videos.js?v=4"></script>
+<script src="js/night.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>
