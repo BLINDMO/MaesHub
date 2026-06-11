@@ -170,11 +170,8 @@ const Eggs = (() => {
       egg.classList.add('opened');
       egg.disabled = true;
       if (i === wolfIndex) {
-        egg.innerHTML = Chars.wolfHeadSVG();
-        egg.classList.add('wolf-egg');
-        Sound.growl();
         finished = true;
-        later(() => showResult(false), 700);
+        wolfEscapes(egg);
       } else {
         egg.textContent = CHICKS[Math.floor(Math.random() * CHICKS.length)];
         Sound.chirp();
@@ -194,12 +191,48 @@ const Eggs = (() => {
     }, 420);
   }
 
+  /* Found him! The wolf bursts out of the egg and sprints away. */
+  function wolfEscapes(egg) {
+    egg.textContent = '🥚';
+    egg.classList.add('cracked-shell');
+    Sound.growl();
+
+    const wolf = document.createElement('div');
+    wolf.id = 'eggs-wolf';
+    wolf.classList.add('escaping');
+    wolf.innerHTML = Chars.wolfSVG();
+    wolf.style.left = egg.style.left;
+    wolf.style.top = egg.style.top;
+    field.appendChild(wolf);
+
+    // a beat to realize what happened… then he bolts for the edge
+    later(() => {
+      Sound.bonk();
+      wolf.classList.add('running');
+      wolf.style.left = '125%';
+      const fromLeft = parseFloat(egg.style.left);
+      for (let k = 0; k < 4; k++) {
+        later(() => {
+          const puff = document.createElement('span');
+          puff.className = 'dust-puff';
+          puff.textContent = '💨';
+          puff.style.left = Math.min(96, fromLeft + 8 + k * (96 - fromLeft) / 4) + '%';
+          puff.style.top = egg.style.top;
+          field.appendChild(puff);
+          setTimeout(() => puff.remove(), 900);
+        }, 150 + k * 280);
+      }
+    }, 800);
+
+    later(() => showResult(false), 2700);
+  }
+
   function showResult(won) {
     const overlay = document.getElementById('eggs-result-overlay');
     document.getElementById('eggs-result-emoji').textContent = won ? '🐥🎉🐥' : '🐺';
     document.getElementById('eggs-result-text').textContent = won
       ? 'You found ALL 24 chicks and dodged the wolf! Amazing!'
-      : 'Aaooo! The wolf was hiding in that one! Try again!';
+      : 'You found the wolf — and he ran away! Game over, try again!';
     overlay.classList.remove('hidden');
   }
 

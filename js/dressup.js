@@ -402,8 +402,6 @@ const Dressup = (() => {
 
   /* ---------- the princess dressing room ---------- */
   function roomSVG() {
-    const light = (x, c) => `<circle cx="${x}" cy="${36 + Math.sin(x / 50) * 14}" r="5" fill="${c}" opacity="0.95"/>
-      <circle cx="${x}" cy="${36 + Math.sin(x / 50) * 14}" r="10" fill="${c}" opacity="0.25"/>`;
     const panel = (x) => `<rect x="${x}" y="70" width="92" height="270" rx="44" fill="none" stroke="#c9a3e0" stroke-width="3" opacity="0.4"/>`;
     return `<svg id="dressup-room" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -419,9 +417,6 @@ const Dressup = (() => {
       <!-- panel moldings & chair rail -->
       ${panel(120)}${panel(244)}${panel(464)}${panel(588)}
       <rect y="372" width="800" height="6" fill="#c9a3e0" opacity="0.35"/>
-      <!-- string of fairy lights -->
-      <path d="M0 30 Q200 64 400 30 Q600 64 800 30" fill="none" stroke="#d8c490" stroke-width="2" opacity="0.7"/>
-      ${[70, 150, 230, 310, 490, 570, 650, 730].map((x, i) => light(x, ['#ffd54f', '#ff9ec4', '#9fd4f2', '#c5f29f'][i % 4])).join('')}
       <!-- gilded mirror, right -->
       <path d="M598 130 a62 74 0 0 1 124 0 V392 H598 Z" fill="none" stroke="#e8c468" stroke-width="9"/>
       <path d="M606 134 a54 66 0 0 1 108 0 V384 H606 Z" fill="url(#mirror-g)"/>

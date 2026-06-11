@@ -256,6 +256,7 @@ const CameraStudio = (() => {
   }
 
   function start() {
+    facing = 'user'; // always open on the selfie camera first
     setMode('preview');
     openCamera();
   }
