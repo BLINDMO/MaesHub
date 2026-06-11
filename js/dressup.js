@@ -422,14 +422,6 @@ const Dressup = (() => {
       <!-- string of fairy lights -->
       <path d="M0 30 Q200 64 400 30 Q600 64 800 30" fill="none" stroke="#d8c490" stroke-width="2" opacity="0.7"/>
       ${[70, 150, 230, 310, 490, 570, 650, 730].map((x, i) => light(x, ['#ffd54f', '#ff9ec4', '#9fd4f2', '#c5f29f'][i % 4])).join('')}
-      <!-- chandelier -->
-      <path d="M400 0 V36 M376 52 Q400 70 424 52" stroke="#e8c468" stroke-width="3" fill="none"/>
-      <path d="M368 44 Q400 24 432 44 L424 52 Q400 38 376 52 Z" fill="#e8c468"/>
-      <circle cx="368" cy="50" r="6" fill="#fff3b0"/>
-      <circle cx="400" cy="60" r="7" fill="#fff3b0"/>
-      <circle cx="432" cy="50" r="6" fill="#fff3b0"/>
-      <circle cx="400" cy="60" r="14" fill="#fff3b0" opacity="0.25"/>
-      ${[380, 392, 408, 420].map((x) => `<circle cx="${x}" cy="${72 + (x % 3) * 4}" r="2.4" fill="#e8f2fb" opacity="0.9"/>`).join('')}
       <!-- gilded mirror, right -->
       <path d="M598 130 a62 74 0 0 1 124 0 V392 H598 Z" fill="none" stroke="#e8c468" stroke-width="9"/>
       <path d="M606 134 a54 66 0 0 1 108 0 V384 H606 Z" fill="url(#mirror-g)"/>
