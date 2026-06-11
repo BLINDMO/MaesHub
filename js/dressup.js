@@ -347,9 +347,25 @@ const Dressup = (() => {
       }
     });
     ACCESSORIES.forEach((a, i) => {
-      items.extras.push({ id: `a${i}`, ...a });
+      items.extras.push({ id: `a${i}`, slot: slotFor(a.name), ...a });
     });
     return items;
+  }
+
+  // one accessory per body spot: picking a second necklace swaps the first
+  function slotFor(name) {
+    if (/Crown|Tiara|Halo|Ears/.test(name)) return 'headwear';
+    if (/Bow/.test(name)) return 'bow';
+    if (/Glasses|Sunnies/.test(name)) return 'glasses';
+    if (/Studs|Dangles/.test(name)) return 'earrings';
+    if (/Necklace|Pendant|Choker|Scarf/.test(name)) return 'necklace';
+    if (/Wand/.test(name)) return 'wand';
+    if (/Purse|Bag|Tote/.test(name)) return 'bag';
+    if (/Wings/.test(name)) return 'wings';
+    if (/Bangle/.test(name)) return 'right-wrist';
+    if (/Band/.test(name)) return 'left-wrist';
+    if (/Belt/.test(name)) return 'belt';
+    return name;
   }
 
   const ITEMS = buildItems();
@@ -496,8 +512,16 @@ const Dressup = (() => {
       card.addEventListener('click', () => {
         Sound.pop();
         if (cat === 'extras') {
-          if (outfit.extras.includes(item.id)) outfit.extras = outfit.extras.filter((x) => x !== item.id);
-          else outfit.extras.push(item.id);
+          if (outfit.extras.includes(item.id)) {
+            outfit.extras = outfit.extras.filter((x) => x !== item.id);
+          } else {
+            // take off whatever already occupies this slot, then put it on
+            outfit.extras = outfit.extras.filter((x) => {
+              const worn = find('extras', x);
+              return worn && worn.slot !== item.slot;
+            });
+            outfit.extras.push(item.id);
+          }
         } else {
           outfit[cat] = outfit[cat] === item.id ? null : item.id;
         }
@@ -517,9 +541,11 @@ const Dressup = (() => {
     outfit.shoes = pick(ITEMS.shoes);
     outfit.extras = [];
     const n = 1 + Math.floor(Math.random() * 3);
-    while (outfit.extras.length < n) {
+    for (let tries = 0; outfit.extras.length < n && tries < 20; tries++) {
       const id = pick(ITEMS.extras);
-      if (!outfit.extras.includes(id)) outfit.extras.push(id);
+      const item = find('extras', id);
+      const slotTaken = outfit.extras.some((x) => find('extras', x).slot === item.slot);
+      if (!slotTaken) outfit.extras.push(id);
     }
     saveOutfit();
     renderDoll();
