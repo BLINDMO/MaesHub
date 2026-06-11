@@ -35,5 +35,6 @@ const Sound = (() => {
     sparkle() { [1200, 1500, 1900].forEach((f, i) => tone(f, 0.12, { vol: 0.12, when: i * 0.06 })); },
     bonk()    { tone(220, 0.25, { type: 'square', vol: 0.2, slideTo: 110 }); },
     fanfare() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, { type: 'triangle', vol: 0.22, when: i * 0.13 })); },
+    shutter() { tone(1900, 0.03, { type: 'square', vol: 0.2 }); tone(800, 0.05, { type: 'square', vol: 0.16, when: 0.06 }); },
   };
 })();

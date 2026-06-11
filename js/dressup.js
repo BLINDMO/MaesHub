@@ -30,7 +30,7 @@ const Dressup = (() => {
     return `
       <defs>
         ${grad('skin-g', '#fbe6cf', '#efc6a2')}
-        <radialGradient id="iris-g"><stop offset="0.25" stop-color="#8fd2f2"/><stop offset="1" stop-color="#3a85bd"/></radialGradient>
+        <radialGradient id="iris-g"><stop offset="0.2" stop-color="#bfeafd"/><stop offset="0.7" stop-color="#5fb2e6"/><stop offset="1" stop-color="#2e7fc6"/></radialGradient>
         <radialGradient id="blush-g"><stop offset="0" stop-color="#f7a8a0" stop-opacity="0.55"/><stop offset="1" stop-color="#f7a8a0" stop-opacity="0"/></radialGradient>
       </defs>
       <!-- legs -->
@@ -49,28 +49,30 @@ const Dressup = (() => {
       <!-- neck & head -->
       <path d="M142 118 h16 v22 q-8 6 -16 0 Z" fill="${SKIN_D}"/>
       <ellipse cx="150" cy="86" rx="39" ry="44" fill="url(#skin-g)"/>
-      <!-- brows -->
-      <path d="M124 71 Q133 66 142 71" stroke="#b8854f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <path d="M158 71 Q167 66 176 71" stroke="#b8854f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <!-- eyes: sclera, iris, pupil, catchlights, lid + lashes -->
-      <ellipse cx="133" cy="87" rx="8.2" ry="10" fill="#fff"/>
-      <ellipse cx="167" cy="87" rx="8.2" ry="10" fill="#fff"/>
-      <circle cx="133" cy="88.5" r="5.6" fill="url(#iris-g)"/>
-      <circle cx="167" cy="88.5" r="5.6" fill="url(#iris-g)"/>
-      <circle cx="133" cy="88.5" r="2.6" fill="#23232c"/>
-      <circle cx="167" cy="88.5" r="2.6" fill="#23232c"/>
-      <circle cx="135" cy="86" r="1.5" fill="#fff"/>
-      <circle cx="169" cy="86" r="1.5" fill="#fff"/>
-      <circle cx="131" cy="91" r="0.9" fill="#fff" opacity="0.8"/>
-      <circle cx="165" cy="91" r="0.9" fill="#fff" opacity="0.8"/>
-      <path d="M124.5 82 Q133 75 141.5 82" stroke="#3a2e26" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <path d="M158.5 82 Q167 75 175.5 82" stroke="#3a2e26" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <path d="M124 82 l-3.5 -2.5 M127 79.4 l-2.8 -3.2 M176 82 l3.5 -2.5 M173 79.4 l2.8 -3.2"
-        stroke="#3a2e26" stroke-width="1.8" stroke-linecap="round"/>
-      <!-- nose & lips -->
-      <path d="M148 98 Q150 101 152 98" stroke="${SKIN_D}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M141 109 Q145.5 105.5 150 108.5 Q154.5 105.5 159 109 Q150 117.5 141 109 Z" fill="#e0685f"/>
-      <path d="M144 108.4 Q150 111 156 108.4" stroke="#c24f48" stroke-width="1.2" fill="none" opacity="0.6"/>
+      <!-- slim arched brows, ice-queen style -->
+      <path d="M123 69 Q133 63.5 143 69.5" stroke="#caa05f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M157 69.5 Q167 63.5 177 69" stroke="#caa05f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <!-- big ice-blue eyes with winged lashes -->
+      <ellipse cx="133" cy="87" rx="9.2" ry="11" fill="#fff"/>
+      <ellipse cx="167" cy="87" rx="9.2" ry="11" fill="#fff"/>
+      <circle cx="133" cy="88.5" r="6.4" fill="url(#iris-g)"/>
+      <circle cx="167" cy="88.5" r="6.4" fill="url(#iris-g)"/>
+      <circle cx="133" cy="88.5" r="2.9" fill="#1d2733"/>
+      <circle cx="167" cy="88.5" r="2.9" fill="#1d2733"/>
+      <circle cx="135.4" cy="85.6" r="1.8" fill="#fff"/>
+      <circle cx="169.4" cy="85.6" r="1.8" fill="#fff"/>
+      <circle cx="130.4" cy="91" r="1" fill="#fff" opacity="0.85"/>
+      <circle cx="164.4" cy="91" r="1" fill="#fff" opacity="0.85"/>
+      <path d="M123.5 81 Q133 73.5 142.5 81 L145.5 78.6" stroke="#2c2620" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      <path d="M157.5 81 Q167 73.5 176.5 81 L179.5 78.6" stroke="#2c2620" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      <path d="M123 81 l-4 -2.2 M125.5 78.4 l-3.2 -3 M177 81 l4 -2.2 M174.5 78.4 l3.2 -3"
+        stroke="#2c2620" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M126 96.5 Q133 99.5 140 96.5" stroke="#d9b08a" stroke-width="1.4" fill="none" opacity="0.7"/>
+      <path d="M160 96.5 Q167 99.5 174 96.5" stroke="#d9b08a" stroke-width="1.4" fill="none" opacity="0.7"/>
+      <!-- petite nose & soft rose lips -->
+      <path d="M148.5 99 Q150 101.5 151.5 99" stroke="${SKIN_D}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M142.5 109.5 Q146.5 106 150 108.8 Q153.5 106 157.5 109.5 Q150 116.5 142.5 109.5 Z" fill="#e2738c"/>
+      <path d="M146 112.6 Q150 114.4 154 112.6" stroke="#fff" stroke-width="1.1" fill="none" opacity="0.5"/>
       <!-- blush -->
       <circle cx="123" cy="100" r="7.5" fill="url(#blush-g)"/>
       <circle cx="177" cy="100" r="7.5" fill="url(#blush-g)"/>`;
@@ -362,13 +364,31 @@ const Dressup = (() => {
   function find(cat, id) { return ITEMS[cat].find((i) => i.id === id); }
 
   /* ---------- rendering ---------- */
+  // the round runway pedestal she stands on
+  function pedestalSVG() {
+    return `
+      <defs>
+        ${grad('ped-top', '#f4c7e2', '#d893bf')}
+        ${grad('ped-side', '#b76ba0', '#8a4476')}
+      </defs>
+      <ellipse cx="150" cy="545" rx="118" ry="14" fill="rgba(30, 12, 50, 0.4)"/>
+      <path d="M52 494 v28 a98 17 0 0 0 196 0 v-28 Z" fill="url(#ped-side)"/>
+      <ellipse cx="150" cy="494" rx="98" ry="17" fill="url(#ped-top)" stroke="#e8b84a" stroke-width="3"/>
+      <ellipse cx="150" cy="494" rx="78" ry="12" fill="#fff" opacity="0.25"/>
+      <path d="M52 514 a98 17 0 0 0 196 0" fill="none" stroke="#e8b84a" stroke-width="3" opacity="0.85"/>
+      <circle cx="84" cy="500" r="2.4" fill="#ffe9b8"/>
+      <circle cx="150" cy="508" r="2.4" fill="#ffe9b8"/>
+      <circle cx="216" cy="500" r="2.4" fill="#ffe9b8"/>`;
+  }
+
   function dollSVG() {
     const hair = outfit.hair && find('hair', outfit.hair);
     const dress = outfit.dress && find('dress', outfit.dress);
     const shoes = outfit.shoes && find('shoes', outfit.shoes);
     const extras = outfit.extras.map((id) => find('extras', id)).filter(Boolean);
     const layer = (l) => extras.filter((a) => a.layer === l).map((a) => a.svg).join('');
-    return `<svg viewBox="0 0 300 560" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 300 580" xmlns="http://www.w3.org/2000/svg">
+      ${pedestalSVG()}
       ${layer('back')}
       ${hair ? hair.back : ''}
       ${bodySVG()}
@@ -377,6 +397,65 @@ const Dressup = (() => {
       ${layer('body')}
       ${hair ? hair.front : ''}
       ${layer('head')}
+    </svg>`;
+  }
+
+  /* ---------- the princess dressing room ---------- */
+  function roomSVG() {
+    const light = (x, c) => `<circle cx="${x}" cy="${36 + Math.sin(x / 50) * 14}" r="5" fill="${c}" opacity="0.95"/>
+      <circle cx="${x}" cy="${36 + Math.sin(x / 50) * 14}" r="10" fill="${c}" opacity="0.25"/>`;
+    const panel = (x) => `<rect x="${x}" y="70" width="92" height="270" rx="44" fill="none" stroke="#c9a3e0" stroke-width="3" opacity="0.4"/>`;
+    return `<svg id="dressup-room" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        ${grad('room-wall', '#7a5aa8', '#4e3a7e')}
+        ${grad('room-floor', '#a06292', '#6e3f63')}
+        ${grad('mirror-g', '#e8f2fb', '#b6cce4')}
+        ${grad('curtain-g', '#d4537c', '#9c2e55', 1, 0)}
+        ${grad('ward-g', '#9d7cc9', '#6c4f99')}
+      </defs>
+      <rect width="800" height="470" fill="url(#room-wall)"/>
+      <rect y="470" width="800" height="130" fill="url(#room-floor)"/>
+      <rect y="464" width="800" height="10" fill="#3a2a5e"/>
+      <!-- panel moldings & chair rail -->
+      ${panel(120)}${panel(244)}${panel(464)}${panel(588)}
+      <rect y="372" width="800" height="6" fill="#c9a3e0" opacity="0.35"/>
+      <!-- string of fairy lights -->
+      <path d="M0 30 Q200 64 400 30 Q600 64 800 30" fill="none" stroke="#d8c490" stroke-width="2" opacity="0.7"/>
+      ${[70, 150, 230, 310, 490, 570, 650, 730].map((x, i) => light(x, ['#ffd54f', '#ff9ec4', '#9fd4f2', '#c5f29f'][i % 4])).join('')}
+      <!-- chandelier -->
+      <path d="M400 0 V36 M376 52 Q400 70 424 52" stroke="#e8c468" stroke-width="3" fill="none"/>
+      <path d="M368 44 Q400 24 432 44 L424 52 Q400 38 376 52 Z" fill="#e8c468"/>
+      <circle cx="368" cy="50" r="6" fill="#fff3b0"/>
+      <circle cx="400" cy="60" r="7" fill="#fff3b0"/>
+      <circle cx="432" cy="50" r="6" fill="#fff3b0"/>
+      <circle cx="400" cy="60" r="14" fill="#fff3b0" opacity="0.25"/>
+      ${[380, 392, 408, 420].map((x) => `<circle cx="${x}" cy="${72 + (x % 3) * 4}" r="2.4" fill="#e8f2fb" opacity="0.9"/>`).join('')}
+      <!-- gilded mirror, right -->
+      <path d="M598 130 a62 74 0 0 1 124 0 V392 H598 Z" fill="none" stroke="#e8c468" stroke-width="9"/>
+      <path d="M606 134 a54 66 0 0 1 108 0 V384 H606 Z" fill="url(#mirror-g)"/>
+      <path d="M622 160 L688 350" stroke="#fff" stroke-width="10" opacity="0.45"/>
+      <path d="M642 152 L700 320" stroke="#fff" stroke-width="4" opacity="0.4"/>
+      <circle cx="660" cy="96" r="7" fill="#e8c468"/>
+      <!-- wardrobe, left -->
+      <rect x="76" y="120" width="150" height="276" rx="14" fill="url(#ward-g)" stroke="#56407e" stroke-width="4"/>
+      <path d="M151 124 V392" stroke="#56407e" stroke-width="4"/>
+      <rect x="92" y="136" width="44" height="160" rx="18" fill="#fff" opacity="0.14"/>
+      <rect x="166" y="136" width="44" height="160" rx="18" fill="#fff" opacity="0.14"/>
+      <circle cx="140" cy="262" r="5" fill="#e8c468"/>
+      <circle cx="162" cy="262" r="5" fill="#e8c468"/>
+      <path d="M76 396 h150 l10 14 H66 Z" fill="#56407e"/>
+      <!-- velvet curtains framing the room -->
+      <path d="M0 0 H86 Q66 90 78 200 Q88 320 40 470 H0 Z" fill="url(#curtain-g)"/>
+      <path d="M800 0 H714 Q734 90 722 200 Q712 320 760 470 H800 Z" fill="url(#curtain-g)"/>
+      <path d="M30 0 Q44 120 32 260 M58 0 Q70 130 60 280" stroke="#7e2243" stroke-width="5" fill="none" opacity="0.6"/>
+      <path d="M770 0 Q756 120 768 260 M742 0 Q730 130 740 280" stroke="#7e2243" stroke-width="5" fill="none" opacity="0.6"/>
+      <circle cx="64" cy="300" r="9" fill="#e8c468"/>
+      <path d="M64 309 q-4 22 -8 30 M64 309 q4 22 8 30" stroke="#e8c468" stroke-width="4" fill="none"/>
+      <circle cx="736" cy="300" r="9" fill="#e8c468"/>
+      <path d="M736 309 q-4 22 -8 30 M736 309 q4 22 8 30" stroke="#e8c468" stroke-width="4" fill="none"/>
+      <!-- rose rug beneath the pedestal -->
+      <ellipse cx="400" cy="540" rx="250" ry="44" fill="#c75e8f" opacity="0.55"/>
+      <ellipse cx="400" cy="540" rx="250" ry="44" fill="none" stroke="#e8c468" stroke-width="3" opacity="0.7"/>
     </svg>`;
   }
 
@@ -464,13 +543,119 @@ const Dressup = (() => {
 
   function saveOutfit() { localStorage.setItem(STORE_KEY, JSON.stringify(outfit)); }
 
+  /* ---------- photo booth: 3…2…1…click! ---------- */
+  let boothTimers = [];
+  let boothPhoto = null;
+
+  function boothLater(fn, ms) { boothTimers.push(setTimeout(fn, ms)); }
+
+  function openBooth() {
+    Sound.click();
+    boothTimers.forEach(clearTimeout);
+    boothTimers = [];
+    boothPhoto = null;
+    const overlay = document.getElementById('booth-overlay');
+    const count = document.getElementById('booth-count');
+    document.getElementById('booth-card').classList.add('hidden');
+    overlay.classList.remove('hidden');
+    count.classList.remove('hidden');
+
+    ['3', '2', '1'].forEach((n, i) => {
+      boothLater(() => {
+        Sound.pop();
+        count.textContent = n;
+        count.classList.remove('zoom');
+        void count.offsetWidth;
+        count.classList.add('zoom');
+      }, i * 600);
+    });
+    boothLater(() => {
+      count.classList.add('hidden');
+      Sound.shutter();
+      const flash = document.getElementById('booth-flash');
+      flash.classList.remove('flashing');
+      void flash.offsetWidth;
+      flash.classList.add('flashing');
+      renderLookPhoto().then((dataUrl) => {
+        boothPhoto = dataUrl;
+        document.getElementById('booth-photo').src = dataUrl;
+        const dress = outfit.dress && find('dress', outfit.dress);
+        document.getElementById('booth-caption').textContent = dress ? dress.name : 'Cozy Onesie';
+        const btn = document.getElementById('booth-save');
+        btn.disabled = false;
+        btn.textContent = 'Save to My Photos 💾';
+        document.getElementById('booth-card').classList.remove('hidden');
+        Sound.sparkle();
+      });
+    }, 1900);
+  }
+
+  // paint the dressed doll (with a playful tilt) onto a pretty backdrop
+  function renderLookPhoto() {
+    return new Promise((resolve) => {
+      const cv = document.createElement('canvas');
+      cv.width = 620;
+      cv.height = 900;
+      const g = cv.getContext('2d');
+      const bg = g.createLinearGradient(0, 0, 0, cv.height);
+      bg.addColorStop(0, '#fbd9ec');
+      bg.addColorStop(0.6, '#e3d4f7');
+      bg.addColorStop(1, '#cdb4ec');
+      g.fillStyle = bg;
+      g.fillRect(0, 0, cv.width, cv.height);
+      g.font = '34px serif';
+      for (let i = 0; i < 14; i++) {
+        g.globalAlpha = 0.35 + (i % 3) * 0.2;
+        g.fillText(i % 2 ? '✨' : '⭐', (i * 167) % cv.width, 60 + ((i * 211) % (cv.height - 120)));
+      }
+      g.globalAlpha = 1;
+
+      const svg = dollSVG().replace('<svg ', '<svg width="300" height="580" ');
+      const img = new Image();
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve(cv.toDataURL('image/jpeg', 0.82));
+      };
+      img.onload = () => {
+        g.save();
+        g.translate(cv.width / 2, cv.height / 2);
+        g.rotate(-0.05); // strike a pose!
+        g.drawImage(img, -210, -410, 420, 812);
+        g.restore();
+        finish();
+      };
+      img.onerror = finish;
+      setTimeout(finish, 1500); // never leave the booth hanging
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+  }
+
+  function saveBoothPhoto() {
+    if (!boothPhoto) return;
+    Sound.fanfare();
+    CameraStudio.addPhoto(boothPhoto);
+    throwConfetti(90);
+    const btn = document.getElementById('booth-save');
+    btn.textContent = 'Saved! See it in Camera Studio 📚';
+    btn.disabled = true;
+  }
+
+  function closeBooth() {
+    Sound.click();
+    boothTimers.forEach(clearTimeout);
+    boothTimers = [];
+    document.getElementById('booth-overlay').classList.add('hidden');
+  }
+
   function init() {
     stage = document.getElementById('dressup-stage');
     tabsBox = document.getElementById('dressup-tabs');
     itemsBox = document.getElementById('dressup-items');
 
-    // boutique stage: doll platform, outfit caption, twinkling sparkles
-    stage.innerHTML = '<div id="doll-wrap"></div><div id="dressup-caption"></div>';
+    // the princess dressing room: backdrop, doll on her pedestal, caption
+    stage.innerHTML = roomSVG() + '<div id="doll-wrap"></div><div id="dressup-caption"></div>';
     dollWrap = document.getElementById('doll-wrap');
     caption = document.getElementById('dressup-caption');
     for (let i = 0; i < 7; i++) {
@@ -488,6 +673,9 @@ const Dressup = (() => {
       if (saved) outfit = { hair: null, dress: null, shoes: null, extras: [], ...saved };
     } catch (e) { /* fresh doll */ }
 
+    document.getElementById('dressup-photo-btn').addEventListener('click', openBooth);
+    document.getElementById('booth-close').addEventListener('click', closeBooth);
+    document.getElementById('booth-save').addEventListener('click', saveBoothPhoto);
     document.getElementById('dressup-shuffle').addEventListener('click', shuffle);
     document.getElementById('dressup-reset').addEventListener('click', () => {
       Sound.pop();
@@ -504,5 +692,9 @@ const Dressup = (() => {
     renderItems();
   }
 
-  return { init, start };
+  function stop() {
+    closeBooth();
+  }
+
+  return { init, start, stop };
 })();

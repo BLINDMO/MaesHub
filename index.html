@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Mae's Hub 🌈</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -223,6 +223,7 @@
     <button class="btn-back" aria-label="Back">⬅️</button>
     <h2>👗 Dress-Up</h2>
     <div>
+      <button id="dressup-photo-btn" class="btn-pill" aria-label="Photo booth">📸</button>
       <button id="dressup-shuffle" class="btn-pill">Surprise! 🎲</button>
       <button id="dressup-reset" class="btn-pill">Reset ✨</button>
     </div>
@@ -234,6 +235,22 @@
       <div id="dressup-items"></div>
     </div>
   </div>
+
+  <div id="booth-overlay" class="overlay hidden">
+    <div id="booth-count" class="hidden">3</div>
+    <div id="booth-card" class="modal-card hidden">
+      <h3>📸 What a beautiful pose!</h3>
+      <div id="booth-frame">
+        <img id="booth-photo" alt="Princess photo">
+        <span id="booth-caption"></span>
+      </div>
+      <div class="modal-buttons">
+        <button id="booth-close" class="btn-pill btn-soft">Done</button>
+        <button id="booth-save" class="btn-pill btn-go">Save to My Photos 💾</button>
+      </div>
+    </div>
+  </div>
+  <div id="booth-flash"></div>
 </div>
 
 <!-- ============ CAMERA STUDIO ============ -->
@@ -241,7 +258,10 @@
   <header class="game-header">
     <button class="btn-back" aria-label="Back">⬅️</button>
     <h2>📸 Camera Studio</h2>
-    <button id="camera-save" class="btn-pill hidden">Save 💾</button>
+    <div>
+      <button id="camera-save" class="btn-pill hidden">Save 💾</button>
+      <button id="camera-gallery-btn" class="btn-pill">My Photos 📚</button>
+    </div>
   </header>
   <div id="camera-stage">
     <video id="camera-video" autoplay playsinline muted></video>
@@ -254,6 +274,25 @@
   <div id="camera-toolbar" class="hidden">
     <div id="camera-colors"></div>
     <div id="camera-stickers"></div>
+  </div>
+
+  <div id="gallery-overlay" class="overlay hidden">
+    <div class="modal-card">
+      <h3>📚 Mae's Photos</h3>
+      <p id="gallery-empty" class="hidden">No photos yet! Take some pictures or visit the Dress-Up photo booth! 💜</p>
+      <div id="gallery-grid"></div>
+      <button id="gallery-close" class="btn-pill btn-go btn-huge">Done ✅</button>
+    </div>
+  </div>
+
+  <div id="photo-view" class="overlay hidden">
+    <div class="modal-card">
+      <img id="photo-view-img" alt="Saved photo">
+      <div class="modal-buttons">
+        <button id="photo-view-delete" class="btn-pill btn-soft">Throw Away 🗑️</button>
+        <button id="photo-view-close" class="btn-pill btn-go">Back 📚</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -367,19 +406,19 @@
 </div>
 
 <script src="js/vendor/matter.min.js"></script>
-<script src="js/audio.js?v=7"></script>
-<script src="js/confetti.js?v=7"></script>
-<script src="js/characters.js?v=7"></script>
-<script src="js/keypad.js?v=7"></script>
-<script src="js/blocks.js?v=7"></script>
-<script src="js/road.js?v=7"></script>
-<script src="js/eggs.js?v=7"></script>
-<script src="js/garden.js?v=7"></script>
-<script src="js/bridge.js?v=7"></script>
-<script src="js/dressup.js?v=7"></script>
-<script src="js/camera.js?v=7"></script>
-<script src="js/videos.js?v=7"></script>
-<script src="js/night.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/audio.js?v=8"></script>
+<script src="js/confetti.js?v=8"></script>
+<script src="js/characters.js?v=8"></script>
+<script src="js/keypad.js?v=8"></script>
+<script src="js/blocks.js?v=8"></script>
+<script src="js/road.js?v=8"></script>
+<script src="js/eggs.js?v=8"></script>
+<script src="js/garden.js?v=8"></script>
+<script src="js/bridge.js?v=8"></script>
+<script src="js/dressup.js?v=8"></script>
+<script src="js/camera.js?v=8"></script>
+<script src="js/videos.js?v=8"></script>
+<script src="js/night.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
 </body>
 </html>

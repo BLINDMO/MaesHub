@@ -6,6 +6,32 @@
 const CameraStudio = (() => {
   const COLORS = ['#ff5fa2', '#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#9775fa', '#ffffff', '#3a3340'];
   const STICKERS = ['💖', '⭐', '🌈', '🦋', '👑', '🌸', '🐶', '🐱', '🦄', '🍦', '🎀', '✨', '🐰', '🌟', '🍓', '🐥'];
+  const GALLERY_KEY = 'maeshub.photos.v1';
+  const GALLERY_MAX = 12;
+
+  /* ----- the shared photo gallery (Dress-Up saves here too) ----- */
+  function loadGallery() {
+    try { return JSON.parse(localStorage.getItem(GALLERY_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function persistGallery(list) {
+    // photos are big; if storage is full, drop the oldest until it fits
+    while (true) {
+      try { localStorage.setItem(GALLERY_KEY, JSON.stringify(list)); return; }
+      catch (e) { if (!list.length) return; list.pop(); }
+    }
+  }
+  function addPhoto(dataUrl) {
+    const list = loadGallery();
+    list.unshift(dataUrl);
+    if (list.length > GALLERY_MAX) list.length = GALLERY_MAX;
+    persistGallery(list);
+  }
+  function removePhoto(index) {
+    const list = loadGallery();
+    list.splice(index, 1);
+    persistGallery(list);
+  }
 
   let video, canvas, ctx, message;
   let stream = null;
@@ -32,6 +58,21 @@ const CameraStudio = (() => {
       openCamera();
     });
     document.getElementById('camera-save').addEventListener('click', savePhoto);
+    document.getElementById('camera-gallery-btn').addEventListener('click', openGallery);
+    document.getElementById('gallery-close').addEventListener('click', () => {
+      Sound.click();
+      document.getElementById('gallery-overlay').classList.add('hidden');
+    });
+    document.getElementById('photo-view-close').addEventListener('click', () => {
+      Sound.click();
+      document.getElementById('photo-view').classList.add('hidden');
+    });
+    document.getElementById('photo-view-delete').addEventListener('click', () => {
+      Sound.splash();
+      removePhoto(Number(document.getElementById('photo-view').dataset.index));
+      document.getElementById('photo-view').classList.add('hidden');
+      renderGallery();
+    });
 
     const colorRow = document.getElementById('camera-colors');
     COLORS.forEach((c, i) => {
@@ -168,11 +209,50 @@ const CameraStudio = (() => {
 
   function savePhoto() {
     Sound.fanfare();
-    const a = document.createElement('a');
-    a.download = `maes-photo-${Date.now()}.png`;
-    a.href = canvas.toDataURL('image/png');
-    a.click();
+    // downscale to keep the gallery light on storage
+    const maxW = 800;
+    const scale = Math.min(1, maxW / (canvas.width || maxW));
+    const out = document.createElement('canvas');
+    out.width = Math.max(1, Math.round(canvas.width * scale));
+    out.height = Math.max(1, Math.round(canvas.height * scale));
+    out.getContext('2d').drawImage(canvas, 0, 0, out.width, out.height);
+    addPhoto(out.toDataURL('image/jpeg', 0.75));
     throwConfetti(80);
+    const btn = document.getElementById('camera-save');
+    btn.textContent = 'Saved! ✅';
+    setTimeout(() => { btn.textContent = 'Save 💾'; }, 1500);
+  }
+
+  /* ----- gallery UI ----- */
+  function openGallery() {
+    Sound.click();
+    renderGallery();
+    document.getElementById('gallery-overlay').classList.remove('hidden');
+  }
+
+  function renderGallery() {
+    const grid = document.getElementById('gallery-grid');
+    grid.innerHTML = '';
+    const list = loadGallery();
+    document.getElementById('gallery-empty').classList.toggle('hidden', list.length > 0);
+    list.forEach((src, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'gallery-thumb';
+      const img = document.createElement('img');
+      img.src = src;
+      btn.appendChild(img);
+      btn.addEventListener('click', () => viewPhoto(i));
+      grid.appendChild(btn);
+    });
+  }
+
+  function viewPhoto(index) {
+    Sound.pop();
+    const list = loadGallery();
+    if (!list[index]) return;
+    document.getElementById('photo-view-img').src = list[index];
+    document.getElementById('photo-view').dataset.index = index;
+    document.getElementById('photo-view').classList.remove('hidden');
   }
 
   function start() {
@@ -182,7 +262,9 @@ const CameraStudio = (() => {
 
   function stop() {
     closeCamera();
+    document.getElementById('gallery-overlay').classList.add('hidden');
+    document.getElementById('photo-view').classList.add('hidden');
   }
 
-  return { init, start, stop };
+  return { init, start, stop, addPhoto, openGallery };
 })();
