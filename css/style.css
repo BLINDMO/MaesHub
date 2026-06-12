@@ -1529,3 +1529,86 @@ html, body {
   box-shadow: none !important;
   transform: none !important;
 }
+
+/* ================= Magic Garden 2.0 ================= */
+#garden-scene {
+  position: absolute;
+  inset: 0;
+}
+#garden-scene svg { width: 100%; height: 100%; }
+#garden-clouds { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.gcloud {
+  position: absolute;
+  left: -20%;
+  opacity: 0.95;
+  filter: drop-shadow(0 4px 8px rgba(120, 160, 200, 0.25));
+  animation: cloudDrift linear infinite;
+}
+@keyframes cloudDrift { from { left: -18%; } to { left: 108%; } }
+#garden-sun {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  width: clamp(86px, 12vw, 130px);
+  filter: drop-shadow(0 0 22px rgba(255, 214, 90, 0.85));
+  z-index: 2;
+}
+#garden-sun.happy { animation: sunHappy 1.6s ease-in-out; }
+@keyframes sunHappy {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  30% { transform: scale(1.18) rotate(-8deg); }
+  60% { transform: scale(1.12) rotate(8deg); }
+}
+#garden-rainbow {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(46vw, 360px);
+  z-index: 1;
+  animation: rainbowRise 1.4s cubic-bezier(0.2, 1.3, 0.4, 1);
+  pointer-events: none;
+}
+@keyframes rainbowRise {
+  from { opacity: 0; transform: translateX(-50%) translateY(40px) scale(0.6); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+#garden-plots { position: absolute; inset: 0; }
+.plot {
+  position: absolute;
+  width: calc(126px * var(--s, 1));
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  touch-action: none;
+}
+.plot-soil { width: 100%; }
+.plot-soil svg { width: 100%; display: block; }
+/* empty plots breathe gently while the seed tool is in hand */
+#garden-area.seed-mode .plot:not(.planted) .plot-soil { animation: plotBreathe 2s ease-in-out infinite; }
+@keyframes plotBreathe {
+  0%, 100% { transform: scale(1); filter: none; }
+  50% { transform: scale(1.07); filter: drop-shadow(0 0 10px rgba(255, 240, 150, 0.9)); }
+}
+.plot-plant {
+  position: absolute;
+  left: 50%;
+  bottom: 16%;
+  width: calc(118px * var(--s, 1));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.plot-plant svg { width: 100%; display: block; }
+.plot-plant .grow-in { animation: growIn 0.8s cubic-bezier(0.3, 1.4, 0.5, 1); transform-origin: 60px 150px; }
+@keyframes growIn { from { transform: scaleY(0.1); } to { transform: scaleY(1); } }
+.plot-plant.bloomed svg { animation: bloomBounce 0.7s cubic-bezier(0.2, 1.5, 0.4, 1); transform-origin: 50% 100%; }
+@keyframes bloomBounce {
+  0% { transform: scale(0.55); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.plot-plant.bloomed .bloom-head { animation: headSway 4.5s ease-in-out infinite; }
+@keyframes headSway {
+  0%, 100% { transform: rotate(-2.6deg); }
+  50% { transform: rotate(2.6deg); }
+}
+.plot.wiggle { animation: wiggle 0.45s ease-in-out; }
