@@ -1612,3 +1612,25 @@ html, body {
   50% { transform: rotate(2.6deg); }
 }
 .plot.wiggle { animation: wiggle 0.45s ease-in-out; }
+
+/* ---------- Magic Garden 3.0: no tools, wilt & pick ---------- */
+/* the can is purely an actor now — it sits on the grass and flies to pour */
+#garden-can {
+  pointer-events: none;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  width: 86px;
+  height: 74px;
+}
+.plot-plant.wilted svg {
+  filter: saturate(0.18) brightness(0.82) sepia(0.5);
+  transition: filter 1.6s ease;
+}
+.plot-plant.wilted .bloom-head {
+  animation: none !important;
+  transform: rotate(15deg) translateY(7px);
+  transition: transform 1.8s ease;
+}
+/* a wilted flower invites a tap */
+.plot.wilted .plot-soil { animation: plotBreathe 2.2s ease-in-out infinite; }

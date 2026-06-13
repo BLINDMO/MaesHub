@@ -1,34 +1,23 @@
-/* ============ Game 4: Magic Garden 2.0 ============
- * A storybook garden, fully hand-drawn in crisp SVG: rolling hills, a
- * white picket fence, drifting clouds and a smiling sun. Ten tilled soil
- * plots wait in two tidy rows. Pick seeds (flowers AND fruits), tap a
- * plot to plant, then switch to the watering can and tap the plant: it
- * grows through drawn stages — stem, leaves, bud — into a hand-drawn
- * bloom that sways in the breeze. Sunflowers are the stars: tallest of
- * all, with golden petals, a seed-spiral face and their own celebration.
- * Five blooms paint a rainbow; fill all ten plots for the grand finale.
+/* ============ Game 4: Magic Garden 3.0 ============
+ * One simple loop, no tools to juggle: tap an empty soil plot and a
+ * SURPRISE seed is planted. Tap the plant again and the watering can
+ * flies in by itself and pours — the plant grows through hand-drawn
+ * stages into a big vivid bloom that sways in the breeze. Blooms live
+ * for two minutes, then wilt; tap a wilted flower to pick it and the
+ * plot is ready to plant again. Sunflowers (her favorite) come up most
+ * often and get their own celebration.
  */
 const Garden = (() => {
-  const MAX_UNWATERED = 5;
   const GROW_SECONDS = 20;
-  const FLOWER_IDS = ['sunflower', 'tulip', 'rose', 'daisy', 'blossom'];
+  const BLOOM_LIFE = 120000; // blooms last 2 minutes, then wilt
   const BUTTERFLIES = ['🦋', '🐝', '🐞'];
 
-  const SEEDS = [
-    { id: 'mix', icon: '✨', name: 'Surprise' },
-    { id: 'sunflower', icon: '🌻', name: 'Sunflower' },
-    { id: 'tulip', icon: '🌷', name: 'Tulip' },
-    { id: 'rose', icon: '🌹', name: 'Rose' },
-    { id: 'daisy', icon: '🌼', name: 'Daisy' },
-    { id: 'blossom', icon: '🌸', name: 'Blossom' },
-    { id: 'strawberry', icon: '🍓', name: 'Strawberry' },
-    { id: 'watermelon', icon: '🍉', name: 'Watermelon' },
-    { id: 'apple', icon: '🍎', name: 'Apple' },
-    { id: 'grapes', icon: '🍇', name: 'Grapes' },
-    { id: 'cherry', icon: '🍒', name: 'Cherries' },
-    { id: 'carrot', icon: '🥕', name: 'Carrot' },
+  // the surprise pool — sunflowers show up most, fruits sprinkle in
+  const SURPRISE_POOL = [
+    'sunflower', 'sunflower', 'sunflower',
+    'tulip', 'tulip', 'rose', 'rose', 'daisy', 'daisy', 'blossom', 'blossom',
+    'strawberry', 'watermelon', 'apple', 'cherry', 'grapes', 'carrot',
   ];
-  let selectedSeed = SEEDS[0];
 
   // two tidy rows of tilled soil — the back row sits smaller, for depth
   const PLOT_SPOTS = [
@@ -147,7 +136,7 @@ const Garden = (() => {
   </svg>`;
 
   /* ----- plants: every stage hand-drawn, anchored at (60,150) ----- */
-  const wrap = (inner) => `<svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+  const wrap = (inner) => `<svg viewBox="-12 -26 144 186" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
   const mound = `<ellipse cx="60" cy="150" rx="22" ry="7" fill="#8a5a32"/><ellipse cx="60" cy="148" rx="16" ry="5" fill="#a06b3c"/>`;
 
   function stemSVG(h, leaves = 2) {
@@ -185,65 +174,99 @@ const Garden = (() => {
       <circle cx="71" cy="92" r="11" fill="#6cbb59"/>`);
   }
 
-  // the star of the garden 🌻
+  // the star of the garden 🌻 — big, golden and smiling
   function sunflowerSVG() {
-    const cx = 60, cy = 36;
-    const petals = Array.from({ length: 16 }, (_, i) =>
-      `<ellipse cx="${cx}" cy="${cy - 23}" rx="6.5" ry="17" fill="${i % 2 ? '#f2ad17' : '#ffc93d'}"
-        stroke="#d8930f" stroke-width="1" transform="rotate(${i * 22.5} ${cx} ${cy})"/>`).join('');
-    const seeds = Array.from({ length: 12 }, (_, i) => {
-      const a = i * 137.5 * Math.PI / 180, r = 3 + i * 0.95;
-      return `<circle cx="${cx + Math.cos(a) * r}" cy="${cy + Math.sin(a) * r}" r="1.4" fill="#5d3a16"/>`;
+    const cx = 60, cy = 32;
+    const petals = (dist, ry, rot) => Array.from({ length: 14 }, (_, i) =>
+      `<ellipse cx="${cx}" cy="${cy - dist}" rx="8" ry="${ry}" fill="url(#g-sunp)"
+        stroke="#d8930f" stroke-width="1.2" transform="rotate(${i * (360 / 14) + rot} ${cx} ${cy})"/>`).join('');
+    const seeds = Array.from({ length: 16 }, (_, i) => {
+      const a = i * 137.5 * Math.PI / 180, r = 3.4 + i * 1.05;
+      return `<circle cx="${cx + Math.cos(a) * r}" cy="${cy + Math.sin(a) * r}" r="1.6" fill="#5d3a16"/>`;
     }).join('');
-    return wrap(`${mound}${stemSVG(114, 2)}
+    return wrap(`<defs>
+        <linearGradient id="g-sunp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe06b"/><stop offset="1" stop-color="#f09c12"/>
+        </linearGradient>
+        <radialGradient id="g-sunc"><stop offset="0.3" stop-color="#8a5a26"/><stop offset="1" stop-color="#5d3a16"/></radialGradient>
+      </defs>
+      ${mound}${stemSVG(118, 2)}
       <g class="bloom-head" style="transform-origin:60px 150px">
-        ${petals}
-        <circle cx="${cx}" cy="${cy}" r="17" fill="#7a4b1e" stroke="#5d3a16" stroke-width="2"/>
+        <g opacity="0.85">${petals(30, 19, 360 / 28)}</g>
+        ${petals(27, 22, 0)}
+        <circle cx="${cx}" cy="${cy}" r="21" fill="url(#g-sunc)" stroke="#4a2d10" stroke-width="2.4"/>
         ${seeds}
-        <circle cx="${cx - 6}" cy="${cy - 3}" r="2" fill="#fff"/>
-        <circle cx="${cx + 6}" cy="${cy - 3}" r="2" fill="#fff"/>
-        <circle cx="${cx - 6}" cy="${cy - 2.6}" r="1" fill="#2d1d0c"/>
-        <circle cx="${cx + 6}" cy="${cy - 2.6}" r="1" fill="#2d1d0c"/>
-        <path d="M${cx - 5} ${cy + 4} Q${cx} ${cy + 8} ${cx + 5} ${cy + 4}" stroke="#2d1d0c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <circle cx="${cx - 7}" cy="${cy - 4}" r="2.6" fill="#fff"/>
+        <circle cx="${cx + 7}" cy="${cy - 4}" r="2.6" fill="#fff"/>
+        <circle cx="${cx - 7}" cy="${cy - 3.4}" r="1.3" fill="#2d1d0c"/>
+        <circle cx="${cx + 7}" cy="${cy - 3.4}" r="1.3" fill="#2d1d0c"/>
+        <path d="M${cx - 6} ${cy + 5} Q${cx} ${cy + 10} ${cx + 6} ${cy + 5}" stroke="#2d1d0c" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="${cx - 12}" cy="${cy + 3}" r="2.6" fill="#e8915c" opacity="0.7"/>
+        <circle cx="${cx + 12}" cy="${cy + 3}" r="2.6" fill="#e8915c" opacity="0.7"/>
       </g>`);
   }
 
   function tulipSVG() {
-    return wrap(`${mound}${stemSVG(92, 2)}
+    return wrap(`<defs>
+        <linearGradient id="g-tul" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff8da4"/><stop offset="1" stop-color="#d63d5e"/>
+        </linearGradient>
+      </defs>
+      ${mound}${stemSVG(96, 2)}
       <g class="bloom-head" style="transform-origin:60px 150px">
-        <path d="M45 56 C43 38 50 28 60 24 C70 28 77 38 75 56 C70 62 50 62 45 56 Z" fill="#e85d75"/>
-        <path d="M45 54 L51 40 L57 54 L63 38 L69 54 L75 52" stroke="#c83a55" stroke-width="2.4" fill="none" stroke-linejoin="round"/>
-        <path d="M48 36 C50 30 54 27 58 26" stroke="#ff9fb0" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <g transform="translate(60 42) scale(1.35) translate(-60 -42)">
+          <path d="M44 58 C42 38 49 27 60 22 C71 27 78 38 76 58 C70 65 50 65 44 58 Z"
+            fill="url(#g-tul)" stroke="#b22746" stroke-width="2"/>
+          <path d="M44 56 L51 40 L57 56 L63 38 L69 56 L76 54" stroke="#b22746" stroke-width="2.6" fill="none" stroke-linejoin="round"/>
+          <path d="M48 35 C50 29 54 26 58 25" stroke="#ffc2cf" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        </g>
       </g>`);
   }
 
   function roseSVG() {
-    return wrap(`${mound}${stemSVG(94, 2)}
+    return wrap(`<defs>
+        <radialGradient id="g-rose"><stop offset="0.2" stop-color="#f0718a"/><stop offset="1" stop-color="#b22746"/></radialGradient>
+      </defs>
+      ${mound}${stemSVG(98, 2)}
       <g class="bloom-head" style="transform-origin:60px 150px">
-        ${[0, 72, 144, 216, 288].map((a) => `<ellipse cx="60" cy="29" rx="9" ry="14" fill="#d6365a" transform="rotate(${a} 60 42)"/>`).join('')}
-        <circle cx="60" cy="42" r="13" fill="#e85d75"/>
-        <path d="M60 32 C52 36 51 46 58 50 C52 45 55 37 60 35 C66 37 68 44 63 49 C70 46 68 35 60 32 Z" fill="#b22746"/>
-        <circle cx="60" cy="42" r="3.4" fill="#8e1c36"/>
+        <g transform="translate(60 40) scale(1.35) translate(-60 -40)">
+          ${[0, 60, 120, 180, 240, 300].map((a) => `<ellipse cx="60" cy="27" rx="10" ry="15" fill="url(#g-rose)" stroke="#8e1c36" stroke-width="1.2" transform="rotate(${a} 60 40)"/>`).join('')}
+          <circle cx="60" cy="40" r="13.5" fill="#e85d75"/>
+          <path d="M60 30 C51 34 50 45 57 49 C51 44 54 35 60 33 C67 35 69 43 64 48 C71 45 69 33 60 30 Z" fill="#a51f3e"/>
+          <circle cx="60" cy="40" r="3.6" fill="#7e1530"/>
+          <ellipse cx="54" cy="33" rx="3.4" ry="2" fill="#ffc2cf" opacity="0.65" transform="rotate(-30 54 33)"/>
+        </g>
       </g>`);
   }
 
   function daisySVG() {
-    return wrap(`${mound}${stemSVG(88, 2)}
+    return wrap(`<defs>
+        <radialGradient id="g-dai"><stop offset="0.3" stop-color="#ffe89c"/><stop offset="1" stop-color="#e8a92e"/></radialGradient>
+      </defs>
+      ${mound}${stemSVG(92, 2)}
       <g class="bloom-head" style="transform-origin:60px 150px">
-        ${Array.from({ length: 12 }, (_, i) =>
-          `<ellipse cx="60" cy="${44 - 17}" rx="5.5" ry="14" fill="#fff" stroke="#e8e2d2" stroke-width="1" transform="rotate(${i * 30} 60 44)"/>`).join('')}
-        <circle cx="60" cy="44" r="10" fill="#ffd34d" stroke="#e8a92e" stroke-width="2"/>
-        <circle cx="57" cy="42" r="1.4" fill="#e8a92e"/><circle cx="63" cy="45" r="1.4" fill="#e8a92e"/>
+        <g transform="translate(60 42) scale(1.35) translate(-60 -42)">
+          ${Array.from({ length: 14 }, (_, i) =>
+            `<ellipse cx="60" cy="${42 - 18}" rx="5.8" ry="15" fill="#fff" stroke="#dcd4be" stroke-width="1" transform="rotate(${i * (360 / 14)} 60 42)"/>`).join('')}
+          <circle cx="60" cy="42" r="11.5" fill="url(#g-dai)" stroke="#d8930f" stroke-width="1.8"/>
+          ${[0, 72, 144, 216, 288].map((a) => `<circle cx="60" cy="${42 - 5}" r="1.4" fill="#d8930f" transform="rotate(${a} 60 42)"/>`).join('')}
+        </g>
       </g>`);
   }
 
   function blossomSVG() {
-    return wrap(`${mound}${stemSVG(84, 2)}
+    return wrap(`<defs>
+        <radialGradient id="g-blo"><stop offset="0.2" stop-color="#ffd3e3"/><stop offset="1" stop-color="#ee7fa8"/></radialGradient>
+      </defs>
+      ${mound}${stemSVG(88, 2)}
       <g class="bloom-head" style="transform-origin:60px 150px">
-        ${[0, 72, 144, 216, 288].map((a) =>
-          `<circle cx="60" cy="${48 - 13}" r="9.5" fill="#f7a8c4" stroke="#e87fa8" stroke-width="1.4" transform="rotate(${a} 60 48)"/>`).join('')}
-        <circle cx="60" cy="48" r="7" fill="#ffe18a"/>
-        ${[30, 102, 174, 246, 318].map((a) => `<circle cx="60" cy="${48 - 5}" r="1.3" fill="#e8a92e" transform="rotate(${a} 60 48)"/>`).join('')}
+        <g transform="translate(60 46) scale(1.35) translate(-60 -46)">
+          ${[0, 72, 144, 216, 288].map((a) =>
+            `<circle cx="60" cy="${46 - 14}" r="10.5" fill="url(#g-blo)" stroke="#d6608f" stroke-width="1.4" transform="rotate(${a} 60 46)"/>`).join('')}
+          <circle cx="60" cy="46" r="7.5" fill="#ffe18a" stroke="#e8a92e" stroke-width="1.4"/>
+          ${[30, 102, 174, 246, 318].map((a) => `<circle cx="60" cy="${46 - 5}" r="1.4" fill="#e8a92e" transform="rotate(${a} 60 46)"/>`).join('')}
+          <circle cx="55" cy="29" r="2.4" fill="#fff" opacity="0.8"/>
+        </g>
       </g>`);
   }
 
@@ -331,30 +354,19 @@ const Garden = (() => {
   };
 
   /* ================= state & lifecycle ================= */
-  let area, can, drawer, seedBtn;
+  let area, can;
   let plots = [];
   let critters = [];
   let flowerCount = 0;
   let butterflyCount = 0;
   let rafId = null, lastTime = 0, active = false;
   let timers = [];
-  let tool = 'seed';
 
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
-
-  function selectTool(t) {
-    tool = t;
-    can.classList.toggle('selected', t === 'water');
-    seedBtn.classList.toggle('selected', t === 'seed');
-    area.classList.toggle('seed-mode', t === 'seed');
-    if (t === 'water') drawer.classList.remove('open');
-  }
 
   function init() {
     area = document.getElementById('garden-area');
     can = document.getElementById('garden-can');
-    drawer = document.getElementById('seed-drawer');
-    seedBtn = document.getElementById('garden-seed-btn');
     can.innerHTML = CAN_SVG;
     document.getElementById('garden-sun').innerHTML = SUN_SVG;
     document.getElementById('garden-scene').innerHTML = sceneSVG();
@@ -373,43 +385,12 @@ const Garden = (() => {
     }
 
     buildPlots();
+    area.classList.add('seed-mode'); // empty plots always glow softly
 
-    can.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      Sound.click();
-      selectTool('water');
-    });
-    seedBtn.textContent = selectedSeed.icon;
-    seedBtn.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      Sound.click();
-      if (tool === 'seed') drawer.classList.toggle('open');
-      else selectTool('seed');
-    });
-    document.getElementById('garden-scene').addEventListener('pointerdown', () => {
-      drawer.classList.remove('open');
-      if (tool === 'water') Sound.splash();
-    });
     document.getElementById('garden-reset').addEventListener('click', () => {
       Sound.pop();
       resetGarden();
     });
-
-    SEEDS.forEach((seed) => {
-      const packet = document.createElement('button');
-      packet.className = 'seed-packet' + (seed === selectedSeed ? ' selected' : '');
-      packet.innerHTML = `<span>${seed.icon}</span><small>${seed.name}</small>`;
-      packet.addEventListener('pointerdown', (e) => {
-        e.stopPropagation();
-        Sound.pop();
-        selectedSeed = seed;
-        seedBtn.textContent = seed.icon;
-        drawer.querySelectorAll('.seed-packet').forEach((p) => p.classList.toggle('selected', p === packet));
-        drawer.classList.remove('open');
-      });
-      drawer.appendChild(packet);
-    });
-    selectTool('seed');
   }
 
   function buildPlots() {
@@ -423,10 +404,9 @@ const Garden = (() => {
       el.style.setProperty('--s', spot.s);
       el.style.zIndex = Math.round(spot.y);
       el.innerHTML = `<div class="plot-soil">${SOIL_SVG}</div><div class="plot-plant"></div>`;
-      const plot = { el, plantEl: el.querySelector('.plot-plant'), seed: null, stage: -1, growing: false, bloomed: false, bar: null };
+      const plot = { el, plantEl: el.querySelector('.plot-plant'), seed: null, stage: -1, growing: false, bloomed: false, wilted: false, bar: null };
       el.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
-        drawer.classList.remove('open');
         tapPlot(plot);
       });
       box.appendChild(el);
@@ -467,43 +447,26 @@ const Garden = (() => {
     buildPlots();
   }
 
-  /* ================= gameplay ================= */
+  /* ================= gameplay: one simple tap loop ================= */
   function tapPlot(plot) {
-    if (tool === 'water') return waterPlot(plot);
-    // seed tool
-    if (plot.stage >= 0) {
-      if (plot.bloomed) { Sound.sparkle(); sparkleBurst(plot.el, 6); }
-      else { Sound.click(); wiggle(plot.el); }
-      return;
-    }
-    const unwatered = plots.filter((p) => p.stage === 0 && !p.growing).length;
-    if (unwatered >= MAX_UNWATERED) {
-      Sound.bonk();
-      toast('5 seeds are waiting! Water them first! 💧');
-      can.classList.remove('nudge');
-      void can.offsetWidth;
-      can.classList.add('nudge');
-      return;
-    }
+    if (plot.stage === -1) return plantSurprise(plot);
+    if (plot.wilted) return pickFlower(plot);
+    if (plot.growing) { Sound.splash(); rainDroplets(plot.el); return; }
+    if (plot.stage === 0) return waterPlot(plot);
+    if (plot.bloomed) { Sound.sparkle(); sparkleBurst(plot.el, 6); }
+  }
+
+  function plantSurprise(plot) {
     document.getElementById('garden-hint').style.display = 'none';
     Sound.pop();
-    plot.seed = selectedSeed.id === 'mix'
-      ? FLOWER_IDS[Math.floor(Math.random() * FLOWER_IDS.length)]
-      : selectedSeed.id;
+    plot.seed = SURPRISE_POOL[Math.floor(Math.random() * SURPRISE_POOL.length)];
     plot.stage = 0;
     plot.el.classList.add('planted');
     plot.plantEl.innerHTML = sprout;
   }
 
   function waterPlot(plot) {
-    if (plot.stage < 0) { Sound.splash(); return; } // nothing planted here yet
-    if (can.classList.contains('flying')) return;   // one pour at a time
-    if (plot.bloomed || plot.growing) {
-      pourOver(plot);
-      later(() => { Sound.splash(); rainDroplets(plot.el); }, 420);
-      later(() => returnCan(), 1500);
-      return;
-    }
+    if (can.classList.contains('flying')) return; // one pour at a time
     plot.growing = true;
     pourOver(plot);
     later(() => { Sound.splash(); rainDroplets(plot.el); }, 420);
@@ -565,6 +528,8 @@ const Garden = (() => {
       document.getElementById('garden-rainbow').classList.remove('hidden');
       throwConfetti(120);
     }
+    later(() => wilt(plot), BLOOM_LIFE);
+
     if (plots.every((p) => p.bloomed)) {
       later(() => {
         Sound.fanfare();
@@ -573,6 +538,40 @@ const Garden = (() => {
       }, 600);
     }
     maybeSpawnButterfly();
+  }
+
+  // blooms fade after two minutes; tap the wilted flower to pick it
+  function wilt(plot) {
+    if (!plot.bloomed) return;
+    plot.bloomed = false;
+    plot.wilted = true;
+    plot.stage = 4;
+    plot.el.classList.add('wilted');
+    plot.plantEl.classList.add('wilted');
+  }
+
+  function pickFlower(plot) {
+    Sound.pop();
+    for (let i = 0; i < 4; i++) {
+      const leaf = document.createElement('span');
+      leaf.className = 'sparkle';
+      leaf.textContent = i % 2 ? '🍂' : '🍃';
+      const ang = (i / 4) * Math.PI * 2;
+      leaf.style.setProperty('--dx', Math.cos(ang) * 60 + 'px');
+      leaf.style.setProperty('--dy', Math.sin(ang) * 50 - 50 + 'px');
+      leaf.style.left = plot.el.style.left;
+      leaf.style.top = `calc(${plot.el.style.top} - 60px)`;
+      area.appendChild(leaf);
+      setTimeout(() => leaf.remove(), 1000);
+    }
+    plot.plantEl.innerHTML = '';
+    plot.plantEl.classList.remove('bloomed', 'wilted');
+    plot.el.classList.remove('planted', 'wilted');
+    plot.seed = null;
+    plot.stage = -1;
+    plot.growing = false;
+    plot.bloomed = false;
+    plot.wilted = false;
   }
 
   function wiggle(el) {
