@@ -9,6 +9,7 @@
     'screen-dressup': Dressup,
     'screen-camera': CameraStudio,
     'screen-videos': Videos,
+    'screen-baby': Baby,
   };
   let current = 'screen-home';
 

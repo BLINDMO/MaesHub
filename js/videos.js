@@ -347,6 +347,99 @@ const Videos = (() => {
     }
   }
 
+  /* ----- YouTube search (via public Invidious instances — no API key needed) ----- */
+  const INVIDIOUS = [
+    'https://invidious.privacydev.net',
+    'https://inv.bp.projectsegfau.lt',
+    'https://yt.cdaut.de',
+  ];
+
+  function fetchWithTimeout(url, ms) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+  }
+
+  async function searchYouTube(query) {
+    for (const base of INVIDIOUS) {
+      try {
+        const url = `${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video&fields=videoId,title,author&page=1`;
+        const res = await fetchWithTimeout(url, 6000);
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (Array.isArray(data)) return data.slice(0, 16);
+      } catch (e) { /* try next instance */ }
+    }
+    return null; // all instances failed
+  }
+
+  function openSearch() {
+    document.getElementById('search-panel').classList.remove('hidden');
+    document.getElementById('search-input').value = '';
+    document.getElementById('search-results').innerHTML = '';
+    document.getElementById('search-status').textContent = '';
+    document.getElementById('search-input').focus();
+  }
+
+  function closeSearch() {
+    document.getElementById('search-panel').classList.add('hidden');
+  }
+
+  async function doSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    if (!q) return;
+    const status = document.getElementById('search-status');
+    const resultsEl = document.getElementById('search-results');
+    status.textContent = 'Searching…';
+    resultsEl.innerHTML = '';
+
+    const results = await searchYouTube(q);
+    if (!results) {
+      status.textContent = 'Could not connect — check your internet and try again.';
+      return;
+    }
+    if (!results.length) {
+      status.textContent = 'No videos found. Try different words!';
+      return;
+    }
+    status.textContent = '';
+    results.forEach((v) => {
+      const id = v.videoId;
+      const title = v.title || 'Unknown title';
+      const channel = v.author || '';
+      const alreadyAdded = allVideos().some((a) => a.id === id);
+
+      const row = document.createElement('div');
+      row.className = 'search-result-row';
+      row.innerHTML = `
+        <img src="https://i.ytimg.com/vi/${id}/default.jpg" alt="" loading="lazy">
+        <div class="sr-info">
+          <div class="sr-title"></div>
+          <div class="sr-channel"></div>
+        </div>`;
+      row.querySelector('.sr-title').textContent = title;
+      row.querySelector('.sr-channel').textContent = channel;
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn-pill btn-go sr-add' + (alreadyAdded ? ' sr-added' : '');
+      addBtn.textContent = alreadyAdded ? '✅' : '+';
+      addBtn.setAttribute('aria-label', alreadyAdded ? 'Already added' : 'Add video');
+      addBtn.addEventListener('click', () => {
+        if (alreadyAdded || addBtn.dataset.added) return;
+        state.custom.push({ id, title, channel });
+        state.removedDefaults = state.removedDefaults.filter((d) => d !== id);
+        save();
+        addBtn.textContent = '✅';
+        addBtn.dataset.added = '1';
+        addBtn.classList.add('sr-added');
+        Sound.sparkle();
+        renderGrid();
+      });
+      row.appendChild(addBtn);
+      resultsEl.appendChild(row);
+    });
+  }
+
   /* ----- wiring ----- */
   function init() {
     load();
@@ -392,6 +485,14 @@ const Videos = (() => {
     document.getElementById('parent-done').addEventListener('click', () => {
       document.getElementById('parent-panel').classList.add('hidden');
       renderGrid();
+    });
+
+    // search panel
+    document.getElementById('video-search-btn').addEventListener('click', openSearch);
+    document.getElementById('search-close').addEventListener('click', closeSearch);
+    document.getElementById('search-go').addEventListener('click', doSearch);
+    document.getElementById('search-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSearch();
     });
   }
 

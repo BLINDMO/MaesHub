@@ -19,12 +19,14 @@ const Garden = (() => {
     'strawberry', 'watermelon', 'apple', 'cherry', 'grapes', 'carrot',
   ];
 
-  // two tidy rows of tilled soil — the back row sits smaller, for depth
+  // three symmetrical rows of tilled soil — back rows scale down for depth
   const PLOT_SPOTS = [
-    { x: 16, y: 56, s: 0.78 }, { x: 33, y: 55, s: 0.78 }, { x: 50, y: 56, s: 0.78 },
-    { x: 67, y: 55, s: 0.78 }, { x: 84, y: 56, s: 0.78 },
-    { x: 12, y: 80, s: 1 }, { x: 31, y: 82, s: 1 }, { x: 50, y: 81, s: 1 },
-    { x: 69, y: 82, s: 1 }, { x: 88, y: 80, s: 1 },
+    // back row: 3 plots
+    { x: 25, y: 46, s: 0.65 }, { x: 50, y: 45, s: 0.65 }, { x: 75, y: 46, s: 0.65 },
+    // middle row: 4 plots
+    { x: 14, y: 63, s: 0.82 }, { x: 38, y: 62, s: 0.82 }, { x: 62, y: 63, s: 0.82 }, { x: 86, y: 62, s: 0.82 },
+    // front row: 5 plots (kept away from edges to avoid clipping on narrow screens)
+    { x: 11, y: 82, s: 1 }, { x: 28, y: 83, s: 1 }, { x: 50, y: 82, s: 1 }, { x: 72, y: 83, s: 1 }, { x: 89, y: 82, s: 1 },
   ];
 
   /* ================= hand-drawn art ================= */
