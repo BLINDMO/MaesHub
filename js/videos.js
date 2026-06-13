@@ -42,7 +42,7 @@ const Videos = (() => {
     { id: 'yCjJyiqpAuU', title: 'Twinkle Twinkle Little Star', channel: 'Super Simple Songs' },
   ];
 
-  let state = { custom: [], blocked: [], removedDefaults: [], favorites: [] };
+  let state = { custom: [], blocked: [], removedDefaults: [], favorites: [], apiKey: '' };
   const PASSCODE = '0617';
   let playlist = [];   // current visible order, used by the Next button
   let nowPlaying = null;
@@ -244,7 +244,17 @@ const Videos = (() => {
     renderChips();
     renderParentList();
     document.getElementById('add-status').textContent = '';
+    const keyField = document.getElementById('apikey-input');
+    if (keyField) keyField.value = state.apiKey || '';
+    document.getElementById('apikey-status').textContent = state.apiKey ? 'A key is saved. ✅' : '';
     document.getElementById('parent-panel').classList.remove('hidden');
+  }
+
+  function saveApiKey() {
+    const field = document.getElementById('apikey-input');
+    state.apiKey = field.value.trim();
+    save();
+    document.getElementById('apikey-status').textContent = state.apiKey ? 'Saved! Search is now reliable. ✅' : 'Key cleared.';
   }
 
   function renderChips() {
@@ -347,11 +357,20 @@ const Videos = (() => {
     }
   }
 
-  /* ----- YouTube search (via public Invidious instances — no API key needed) ----- */
-  const INVIDIOUS = [
-    'https://invidious.privacydev.net',
-    'https://inv.bp.projectsegfau.lt',
-    'https://yt.cdaut.de',
+  /* ----- YouTube search -----
+   * Tried in order of reliability:
+   *   1. Official YouTube Data API (if a parent saved a key) — rock-solid,
+   *      CORS-friendly, and safeSearch=strict filters out adult content.
+   *   2. Piped API instances — keyless and send CORS headers, so the
+   *      browser can read them (unlike most Invidious instances).
+   * Returns an array of { videoId, title, author } or null if every
+   * backend was unreachable (so we can tell "no results" from "offline"). */
+  const PIPED = [
+    'https://pipedapi.kavin.rocks',
+    'https://pipedapi.adminforge.de',
+    'https://api.piped.private.coffee',
+    'https://pipedapi.leptons.xyz',
+    'https://piped-api.lunar.icu',
   ];
 
   function fetchWithTimeout(url, ms) {
@@ -360,17 +379,48 @@ const Videos = (() => {
     return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
   }
 
-  async function searchYouTube(query) {
-    for (const base of INVIDIOUS) {
+  async function searchViaApiKey(query, key) {
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&safeSearch=strict&maxResults=18&q=${encodeURIComponent(query)}&key=${key}`;
+    const res = await fetchWithTimeout(url, 8000);
+    if (!res.ok) throw new Error('api key request failed');
+    const data = await res.json();
+    return (data.items || [])
+      .filter((it) => it.id && it.id.videoId)
+      .map((it) => ({ videoId: it.id.videoId, title: it.snippet.title, author: it.snippet.channelTitle }));
+  }
+
+  async function searchViaPiped(query) {
+    for (const base of PIPED) {
       try {
-        const url = `${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video&fields=videoId,title,author&page=1`;
-        const res = await fetchWithTimeout(url, 6000);
+        const res = await fetchWithTimeout(`${base}/search?q=${encodeURIComponent(query)}&filter=videos`, 6000);
         if (!res.ok) continue;
         const data = await res.json();
-        if (Array.isArray(data)) return data.slice(0, 16);
+        const items = data.items || data; // some instances return a bare array
+        if (!Array.isArray(items)) continue;
+        const mapped = items
+          .filter((it) => (it.url || it.videoId))
+          .map((it) => ({
+            videoId: it.videoId || (it.url || '').replace('/watch?v=', ''),
+            title: it.title || 'Untitled',
+            author: it.uploaderName || it.author || '',
+          }))
+          .filter((v) => v.videoId && v.videoId.length === 11);
+        if (mapped.length) return mapped.slice(0, 18);
       } catch (e) { /* try next instance */ }
     }
-    return null; // all instances failed
+    return null;
+  }
+
+  async function searchYouTube(query) {
+    // 1. official API if the parent configured a key
+    if (state.apiKey) {
+      try {
+        const r = await searchViaApiKey(query, state.apiKey);
+        if (r) return r;
+      } catch (e) { /* fall through to keyless */ }
+    }
+    // 2. keyless Piped instances
+    return await searchViaPiped(query);
   }
 
   function openSearch() {
@@ -395,7 +445,9 @@ const Videos = (() => {
 
     const results = await searchYouTube(q);
     if (!results) {
-      status.textContent = 'Could not connect — check your internet and try again.';
+      status.textContent = state.apiKey
+        ? 'Could not connect — check your internet and try again.'
+        : 'Search is busy right now. Tip: a grown-up can add a free YouTube API key in Grown-Ups settings for reliable search.';
       return;
     }
     if (!results.length) {
@@ -486,6 +538,9 @@ const Videos = (() => {
       document.getElementById('parent-panel').classList.add('hidden');
       renderGrid();
     });
+
+    // api key
+    document.getElementById('apikey-save').addEventListener('click', saveApiKey);
 
     // search panel
     document.getElementById('video-search-btn').addEventListener('click', openSearch);

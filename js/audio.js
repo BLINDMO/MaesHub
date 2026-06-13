@@ -36,5 +36,12 @@ const Sound = (() => {
     bonk()    { tone(220, 0.25, { type: 'square', vol: 0.2, slideTo: 110 }); },
     fanfare() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, { type: 'triangle', vol: 0.22, when: i * 0.13 })); },
     shutter() { tone(1900, 0.03, { type: 'square', vol: 0.2 }); tone(800, 0.05, { type: 'square', vol: 0.16, when: 0.06 }); },
+    // ----- baby-care voices -----
+    giggle()  { [780, 990, 760, 1020, 880].forEach((f, i) => tone(f, 0.09, { type: 'triangle', vol: 0.16, when: i * 0.1 })); },
+    squeak()  { tone(1500, 0.08, { type: 'sine', vol: 0.18, slideTo: 2200 }); tone(2000, 0.08, { type: 'sine', vol: 0.16, slideTo: 1300, when: 0.08 }); },
+    slurp()   { tone(380, 0.18, { type: 'sawtooth', vol: 0.1, slideTo: 620 }); },
+    burp()    { tone(150, 0.28, { type: 'sawtooth', vol: 0.18, slideTo: 90 }); },
+    lullaby() { [660, 587, 523].forEach((f, i) => tone(f, 0.3, { type: 'sine', vol: 0.16, when: i * 0.22 })); },
+    yay()     { [523, 784, 1047].forEach((f, i) => tone(f, 0.16, { type: 'triangle', vol: 0.2, when: i * 0.08 })); },
   };
 })();

@@ -118,11 +118,28 @@ const Garden = (() => {
     <ellipse cx="294" cy="160" rx="26" ry="14" fill="#fff"/>
   </svg>`;
 
-  const SOIL_SVG = `<svg viewBox="0 0 120 56" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="60" cy="30" rx="50" ry="19" fill="#8a5a32"/>
-    <ellipse cx="60" cy="27" rx="42" ry="14" fill="#a06b3c"/>
-    <path d="M28 27 Q60 18 92 27 M32 34 Q60 26 88 34" stroke="#7a4b26" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.55"/>
-    <circle cx="42" cy="24" r="2" fill="#7a4b26"/><circle cx="76" cy="31" r="2" fill="#7a4b26"/>
+  const SOIL_SVG = `<svg viewBox="0 0 120 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="soilg" cx="50%" cy="36%" r="68%">
+        <stop offset="0" stop-color="#b07c46"/><stop offset="0.7" stop-color="#8a5a30"/><stop offset="1" stop-color="#5e3a1a"/>
+      </radialGradient>
+    </defs>
+    <!-- drop shadow on the grass -->
+    <ellipse cx="60" cy="48" rx="52" ry="15" fill="rgba(0,0,0,0.13)"/>
+    <!-- raised soil mound -->
+    <ellipse cx="60" cy="40" rx="51" ry="21" fill="#5e3a1a"/>
+    <ellipse cx="60" cy="33" rx="47" ry="19" fill="url(#soilg)"/>
+    <!-- inviting planting hole in the middle -->
+    <ellipse cx="60" cy="31" rx="15" ry="6.5" fill="#4a2d13"/>
+    <ellipse cx="60" cy="30" rx="9.5" ry="4" fill="#382207"/>
+    <!-- tilled-soil clumps & texture -->
+    <circle cx="33" cy="34" r="3.2" fill="#9a6634"/><circle cx="88" cy="35" r="3.4" fill="#9a6634"/>
+    <circle cx="44" cy="42" r="2.6" fill="#754a26"/><circle cx="78" cy="43" r="2.8" fill="#754a26"/>
+    <circle cx="26" cy="38" r="2.4" fill="#754a26"/><circle cx="95" cy="40" r="2.4" fill="#754a26"/>
+    <path d="M30 30 Q44 24 58 27 M62 27 Q78 24 92 31" stroke="#6e4524" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+    <!-- little grass tufts hugging the rim -->
+    <path d="M12 40 q-1 -8 2 -12 M17 41 q1 -8 4 -11" stroke="#4e9c3e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M108 40 q1 -8 -2 -12 M103 41 q-1 -8 -4 -11" stroke="#4e9c3e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
   </svg>`;
 
   const CAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 90">
