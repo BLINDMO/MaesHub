@@ -1640,8 +1640,6 @@ html, body {
    ============================================================ */
 #screen-baby {
   background: linear-gradient(180deg, #fef3fb 0%, #fce6f6 100%);
-  display: flex;
-  flex-direction: column;
 }
 #screen-baby .game-header {
   flex-shrink: 0;
