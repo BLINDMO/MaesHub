@@ -44,7 +44,8 @@ const Eggs = (() => {
   }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
-  // a sunny meadow behind the eggs: clouds in the sky, flowers in the grass
+  // a sunny meadow behind the eggs: a deep sky with sun glow and drifting
+  // clouds at a couple of depths, flowers in the grass
   function decorate() {
     const add = (txt, x, y, cls, size) => {
       const s = document.createElement('span');
@@ -55,9 +56,17 @@ const Eggs = (() => {
       if (size) s.style.fontSize = size + 'rem';
       field.appendChild(s);
     };
-    add('☁️', 8 + Math.random() * 14, 2, 'cloud');
-    add('☁️', 62 + Math.random() * 24, 5, 'cloud');
-    add('🌞', 88, 1, 'cloud', 2.6);
+    const glow = document.createElement('span');
+    glow.className = 'field-decor sun-glow';
+    glow.style.left = '85%';
+    glow.style.top = '1%';
+    field.appendChild(glow);
+    add('🌞', 85, 1, 'cloud sun-emoji', 3.1);
+    add('☁️', 10 + Math.random() * 10, 3, 'cloud cloud-far', 2.2);
+    add('☁️', 30 + Math.random() * 14, 1, 'cloud cloud-far', 1.8);
+    add('☁️', 4 + Math.random() * 10, 9, 'cloud cloud-near', 3.4);
+    add('☁️', 56 + Math.random() * 16, 8, 'cloud cloud-near', 2.8);
+    add('🐦', 22 + Math.random() * 12, 6, 'cloud bird', 1.1);
     const plants = ['🌼', '🌷', '🌾', '☘️', '🍄', '🌻', '🌸', '🌾'];
     plants.forEach((p, i) => {
       add(p, 4 + ((i * 37 + Math.random() * 18) % 92), 28 + ((i * 23 + Math.random() * 12) % 64), 'plant-decor', 1.3 + Math.random() * 0.8);
@@ -75,7 +84,7 @@ const Eggs = (() => {
     document.getElementById('eggs-found').textContent = 0;
     document.getElementById('eggs-total').textContent = TOTAL - 1;
 
-    const spots = scatter(TOTAL);
+    const spots = gridSpots(TOTAL);
     const eggs = [];
     for (let i = 0; i < TOTAL; i++) {
       const egg = document.createElement('button');
@@ -123,41 +132,54 @@ const Eggs = (() => {
       field.classList.add('shake');
       setTimeout(() => field.classList.remove('shake'), 450);
       Sound.pop();
+
+      // wait for every egg's slide-into-place transition to actually finish
+      // before accepting taps — a fixed guess-timer here used to race the
+      // CSS transition on slower devices, so taps right after the dive were
+      // silently swallowed and looked like the eggs were "stuck"
+      let settled = 0;
       eggs.forEach((egg, i) => {
-        egg.style.transitionDelay = (Math.random() * 0.35) + 's';
+        egg.style.transitionDelay = (Math.random() * 0.22) + 's';
         egg.style.left = spots[i].x + '%';
         egg.style.top = spots[i].y + '%';
         egg.style.rotate = (Math.random() * 36 - 18) + 'deg';
+        egg.addEventListener('transitionend', function onSettled(e) {
+          if (e.propertyName !== 'left') return;
+          egg.removeEventListener('transitionend', onSettled);
+          egg.style.transitionDelay = '0s';
+          settled++;
+          if (settled === eggs.length) accepting = true;
+        });
       });
+      // safety net in case a transitionend event is ever missed (e.g. tab
+      // backgrounded mid-animation) so the game never gets permanently stuck
+      later(() => { accepting = true; }, 2200);
     }, 3500);
-
-    later(() => {
-      eggs.forEach((egg) => { egg.style.transitionDelay = '0s'; });
-      accepting = true;
-    }, 4600);
   }
 
-  function scatter(n) {
-    const w = field.clientWidth || 800, h = field.clientHeight || 600;
-    const minDist = Math.sqrt((w * h) / n) * 0.62;
-    const spots = [];
-    for (let i = 0; i < n; i++) {
-      let best = null, bestScore = -1;
-      for (let attempt = 0; attempt < 60; attempt++) {
-        // keep the eggs on the grass, below the sky line
-        const p = { x: 7 + Math.random() * 86, y: 26 + Math.random() * 64 };
-        const px = (p.x / 100) * w, py = (p.y / 100) * h;
-        let nearest = Infinity;
-        for (const s of spots) {
-          const d = Math.hypot(px - (s.x / 100) * w, py - (s.y / 100) * h);
-          if (d < nearest) nearest = d;
-        }
-        if (nearest >= minDist) { best = p; break; }
-        if (nearest > bestScore) { bestScore = nearest; best = p; }
+  // lay the eggs out in a tidy grid across the grass, with a touch of
+  // jitter per slot so it still feels hand-scattered rather than robotic
+  function gridSpots(n) {
+    const cols = 5;
+    const rows = Math.ceil(n / cols);
+    const xs = Array.from({ length: cols }, (_, c) => 12 + c * (76 / (cols - 1)));
+    const ys = Array.from({ length: rows }, (_, r) => 34 + r * (54 / (rows - 1)));
+    const coords = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (coords.length >= n) break;
+        coords.push({
+          x: xs[c] + (Math.random() - 0.5) * 5,
+          y: ys[r] + (Math.random() - 0.5) * 5,
+        });
       }
-      spots.push(best);
     }
-    return spots;
+    // shuffle slot assignment so egg colors aren't in tidy diagonal stripes
+    for (let i = coords.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [coords[i], coords[j]] = [coords[j], coords[i]];
+    }
+    return coords;
   }
 
   function openEgg(egg, i) {

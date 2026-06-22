@@ -393,11 +393,14 @@ html, body {
 
 /* ---------- Egg Surprise ---------- */
 #eggs-field {
-  /* a sunny grassy meadow: sky, rolling hill horizon, deep grass */
+  /* a sunny grassy meadow: deep gradient sky with haze near the horizon,
+     rolling hill silhouettes, and lush layered grass */
   background:
+    radial-gradient(34% 30% at 85% 4%, rgba(255,247,200,0.95) 0%, rgba(255,231,140,0.35) 45%, transparent 75%),
+    radial-gradient(120% 45% at 50% 17%, rgba(255,255,255,0.55) 0%, transparent 70%),
     radial-gradient(58% 16% at 26% 19%, #a8e094 0 99%, transparent 100%),
     radial-gradient(66% 19% at 76% 20%, #9bd987 0 99%, transparent 100%),
-    linear-gradient(180deg, #b9e6ff 0%, #e0f5ff 17%, #93d77e 17.5%, #7cc868 55%, #65b452 100%);
+    linear-gradient(180deg, #4fa8f0 0%, #7cc3f7 8%, #aadcff 14%, #d8f1ff 17%, #eefbff 18%, #97dd7e 18.5%, #84cf68 40%, #71bf57 65%, #5fac49 85%, #4f9a3e 100%);
 }
 .field-decor {
   position: absolute;
@@ -406,7 +409,27 @@ html, body {
   z-index: 0;
   filter: drop-shadow(0 3px 3px rgba(0,0,0,0.12));
 }
-.field-decor.cloud { font-size: 3rem; opacity: 0.95; animation: bob 5s ease-in-out infinite; }
+.field-decor.cloud { font-size: 3rem; opacity: 0.95; animation: cloudBob 5s ease-in-out infinite; }
+.field-decor.cloud-far { opacity: 0.7; filter: blur(0.5px) drop-shadow(0 2px 2px rgba(0,0,0,0.08)); animation-duration: 7s; }
+.field-decor.cloud-near { opacity: 1; animation-duration: 4.2s; }
+.field-decor.sun-emoji { animation: cloudBob 6s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(255,221,120,0.9)); }
+.field-decor.sun-glow {
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(255,244,200,0.85) 0%, rgba(255,221,140,0.35) 45%, transparent 72%);
+  border-radius: 50%;
+  filter: none;
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+.field-decor.bird { font-size: 1.1rem; opacity: 0.85; animation: birdDrift 6s ease-in-out infinite; }
+@keyframes cloudBob {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-8px); }
+}
+@keyframes pulseGlow { 0%, 100% { opacity: 0.85; scale: 1; } 50% { opacity: 1; scale: 1.08; } }
+@keyframes birdDrift {
+  0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+  50% { transform: translate(-50%, -50%) translateX(18px); }
+}
 .egg { z-index: 2; }
 #eggs-hud { background: #fff; border-radius: 999px; padding: 8px 18px; font-size: 1.2rem; font-weight: 700; box-shadow: 0 3px 0 rgba(0,0,0,0.1); }
 #eggs-field { flex: 1; position: relative; }
@@ -1217,14 +1240,21 @@ html, body {
 #garden-can.flying { transition: left 0.4s ease, top 0.4s ease; transform: none; }
 #garden-can.pouring { animation: pour 1s ease-in-out !important; }
 
-/* ---------- wobbly bridge ---------- */
+/* ---------- wobbly bridge (top-down stepping stones) ---------- */
 .card-bridge { background: linear-gradient(150deg, #ffb86b, #d97a2b); --glow: rgba(217, 122, 43, 0.55); }
 .menu-card:nth-child(9) { animation-delay: 0.43s; }
 #screen-bridge { background: linear-gradient(180deg, #bfe7ff 0%, #e8f7e0 70%, #cfeec4 100%); }
 #bridge-area { flex: 1; position: relative; overflow: hidden; }
-#bridge-board { position: absolute; inset: 0; z-index: 1; }
+#bridge-board {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  z-index: 1;
+  transition: transform 0.5s cubic-bezier(0.3, 0.8, 0.4, 1);
+  will-change: transform;
+}
 #bridge-river {
-  /* the whole crossing is over water now */
+  /* the whole crossing is over water */
   position: absolute;
   inset: 0;
   background: linear-gradient(160deg, #84c8ef 0%, #5aa9da 55%, #3d8fc7 100%);
@@ -1233,14 +1263,13 @@ html, body {
 #bridge-river::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(90deg, transparent 0 34px, rgba(255,255,255,0.28) 34px 52px);
-  border-radius: 50%;
-  animation: riverFlow 5s linear infinite;
-  opacity: 0.6;
+  inset: -20%;
+  background: repeating-linear-gradient(112deg, transparent 0 30px, rgba(255,255,255,0.22) 30px 46px);
+  animation: riverFlow 6s linear infinite;
+  opacity: 0.55;
 }
-@keyframes riverFlow { from { transform: translateX(0); } to { transform: translateX(52px); } }
-.river-float { position: absolute; font-size: 1.9rem; animation: floatBob 6s ease-in-out infinite; opacity: 0.95; }
+@keyframes riverFlow { from { transform: translateX(0); } to { transform: translateX(46px); } }
+.river-float { position: absolute; font-size: 1.9rem; animation: floatBob 6s ease-in-out infinite; opacity: 0.95; z-index: 0; }
 @keyframes floatBob {
   0%, 100% { transform: translateY(0) rotate(-6deg); }
   50% { transform: translateY(-10px) rotate(6deg); }
@@ -1254,85 +1283,125 @@ html, body {
   z-index: 6;
 }
 @keyframes splashUp {
-  0% { transform: translateY(20px) scale(0.5); opacity: 1; }
-  60% { transform: translateY(-34px) scale(1.2); opacity: 1; }
-  100% { transform: translateY(-10px) scale(0.8); opacity: 0; }
+  0% { transform: translate(-50%,-50%) scale(0.5); opacity: 1; }
+  60% { transform: translate(-50%,-90px) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%,-60px) scale(0.8); opacity: 0; }
 }
+
+/* grass start bank & home finish bank */
 .bridge-pad {
   position: absolute;
-  width: 142px;
-  height: 76px;
-  transform: translate(-50%, -36%) skewX(-22deg);
-  background: linear-gradient(160deg, #8fd97a, #5cab48);
-  border: 3px solid #4a8f3a;
-  border-radius: 16px;
+  width: 128px;
+  height: 84px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 35%, #9ee084, #5cab48 70%);
+  border: 4px solid #4a8f3a;
+  border-radius: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  box-shadow: 0 8px 0 rgba(58, 110, 44, 0.55);
+  font-size: 2.4rem;
+  box-shadow: 0 8px 18px rgba(40, 80, 30, 0.4), inset 0 3px 0 rgba(255,255,255,0.35);
 }
-.plank {
+.bridge-pad.finish-pad.next { animation: padGlow 1.2s ease-in-out infinite; }
+@keyframes padGlow {
+  0%, 100% { box-shadow: 0 8px 18px rgba(40,80,30,0.4), inset 0 3px 0 rgba(255,255,255,0.35); }
+  50% { box-shadow: 0 8px 18px rgba(40,80,30,0.4), 0 0 26px 8px rgba(255, 240, 150, 0.9); }
+}
+
+/* a single wooden raft seen from above */
+.bridge-tile {
   position: absolute;
-  height: 42px;
-  transform: translate(-50%, -50%) skewX(-22deg);
-  background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0 3px, transparent 3px 26px),
-    linear-gradient(180deg, #d9a766 0%, #b07c42 100%);
-  border: 3px solid #8a5f2e;
-  border-radius: 10px;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: none;
+  border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 7px 0 rgba(90, 60, 25, 0.5);
-  transition: transform 0.15s;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.10) 0 2px, transparent 2px 16%),
+    linear-gradient(180deg, #e0b276 0%, #c08a4c 55%, #a06f38 100%);
+  box-shadow:
+    0 6px 0 rgba(120, 80, 38, 0.6),
+    0 10px 14px rgba(0,0,0,0.28),
+    inset 0 2px 0 rgba(255,255,255,0.4);
+  overflow: hidden;
+  transition: transform 0.12s, box-shadow 0.15s, filter 0.15s;
 }
-.plank::before, .plank::after {
+/* rope bindings down the left & right edges */
+.bridge-tile::before, .bridge-tile::after {
   content: '';
   position: absolute;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #6e4a20;
-  transform: translateY(-50%);
+  top: 8%;
+  bottom: 8%;
+  width: 7px;
+  background: repeating-linear-gradient(180deg, #8a5f2e 0 4px, #6e4a20 4px 8px);
+  border-radius: 4px;
 }
-.plank::before { left: 9px; }
-.plank::after { right: 9px; }
-.plank:active { transform: translate(-50%, -50%) skewX(-22deg) scale(0.93); }
-/* loose planks: visibly cracked and a little askew — spot them! */
-.plank.cracked {
-  rotate: 2.5deg;
+.bridge-tile::before { left: 7px; }
+.bridge-tile::after { right: 7px; }
+.bridge-tile .raft-grain {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 32%, rgba(110,74,32,0.35) 32.5%, transparent 34%);
+  pointer-events: none;
+}
+.bridge-tile:active { transform: translate(-50%, -50%) scale(0.93); }
+
+/* CRACKED rafts — the ones to avoid. A clear jagged split + worn wood. */
+.bridge-tile.cracked {
   background:
-    linear-gradient(115deg, transparent 46%, rgba(58, 36, 10, 0.85) 47.5%, transparent 49%, transparent 54%, rgba(58, 36, 10, 0.7) 55.5%, transparent 57%),
-    repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0 3px, transparent 3px 26px),
-    linear-gradient(180deg, #c89455 0%, #9e6c35 100%);
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.10) 0 2px, transparent 2px 16%),
+    linear-gradient(180deg, #cda06a 0%, #a87c46 55%, #8a6230 100%);
+  filter: brightness(0.96);
 }
-.plank.next { animation: plankGlow 1.4s ease-in-out infinite; }
-@keyframes plankGlow {
-  0%, 100% { box-shadow: 0 7px 0 rgba(90, 60, 25, 0.5); }
-  50% { box-shadow: 0 7px 0 rgba(90, 60, 25, 0.5), 0 0 18px 5px rgba(255, 240, 150, 0.85); }
+.bridge-tile.cracked .raft-crack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(118deg, transparent 44%, rgba(40,24,8,0.9) 46%, rgba(90,60,28,0.2) 48%, transparent 49%),
+    linear-gradient(64deg, transparent 52%, rgba(40,24,8,0.85) 54%, transparent 57%);
 }
-.plank.stood { filter: brightness(1.06); }
-.plank.gone { animation: plankGone 0.8s ease-in forwards; pointer-events: none; }
-@keyframes plankGone {
-  to { transform: translate(-50%, 280px) skewX(-22deg) rotate(24deg); opacity: 0; }
+/* a little chip out of one corner so it reads as broken even at a glance */
+.bridge-tile.cracked::after {
+  background: repeating-linear-gradient(180deg, #8a5f2e 0 4px, #6e4a20 4px 8px);
+  box-shadow: inset -6px 0 0 rgba(40,24,8,0.45);
 }
+
+/* the next row you may hop to glows */
+.bridge-tile.next { animation: tileGlow 1.3s ease-in-out infinite; }
+@keyframes tileGlow {
+  0%, 100% { box-shadow: 0 6px 0 rgba(120,80,38,0.6), 0 10px 14px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 6px 0 rgba(120,80,38,0.6), 0 0 20px 6px rgba(255, 240, 150, 0.9), inset 0 2px 0 rgba(255,255,255,0.4); }
+}
+.bridge-tile.stood { filter: brightness(1.08) saturate(1.1); }
+.bridge-tile.stood::before, .bridge-tile.stood::after { background: repeating-linear-gradient(180deg, #4a8f3a 0 4px, #3a7a2e 4px 8px); }
+
+/* a cracked raft splits apart and sinks when stepped on */
+.bridge-tile.gone { animation: tileSink 0.7s ease-in forwards; pointer-events: none; }
+@keyframes tileSink {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  35% { transform: translate(-50%, -46%) scale(0.96) rotate(4deg); }
+  100% { transform: translate(-50%, 20%) scale(0.7) rotate(16deg); opacity: 0; }
+}
+
 #bridge-pup {
   position: absolute;
   width: 64px;
-  transform: translate(-50%, -88%);
+  transform: translate(-50%, -62%);
   z-index: 5;
   pointer-events: none;
-  transition: left 0.45s ease, top 0.45s ease;
-  filter: drop-shadow(0 6px 5px rgba(0,0,0,0.25));
+  transition: left 0.42s cubic-bezier(0.3,1,0.5,1), top 0.42s cubic-bezier(0.3,1,0.5,1);
+  filter: drop-shadow(0 6px 5px rgba(0,0,0,0.3));
 }
 #bridge-pup svg { width: 100%; }
-#bridge-pup.hopping { animation: pupHop 0.45s ease-out; }
+#bridge-pup.hopping { animation: pupHop 0.42s ease-out; }
 @keyframes pupHop {
-  50% { margin-top: -30px; }
+  50% { transform: translate(-50%, -100%) scale(1.08); }
 }
-#bridge-pup.falling { animation: pupFall 0.9s ease-in forwards; }
+#bridge-pup.falling { animation: pupFall 0.95s ease-in forwards; }
 @keyframes pupFall {
-  to { margin-top: var(--fall, 300px); transform: translate(-50%, -88%) rotate(140deg) scale(0.7); opacity: 0.9; }
+  0% { transform: translate(-50%, -62%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, 60%) scale(0.55) rotate(160deg); opacity: 0; }
 }
 #bridge-hud { background: rgba(255,255,255,0.9); border-radius: 999px; padding: 8px 18px; font-size: 1.1rem; font-weight: 700; box-shadow: 0 3px 0 rgba(0,0,0,0.1); }
 

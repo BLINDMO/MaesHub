@@ -1,20 +1,23 @@
 /* ============ Wobbly Bridge ============
- * A rickety plank bridge climbs at 45° from the bottom-left riverbank to
- * the top-right one. Pick a pup, then tap the planks one at a time to
- * choose the path across. Loose planks (look for the cracks!) give way —
- * the plank tumbles and the pup splashes into the river below. Reach the
- * far bank to unlock a longer, trickier bridge.
+ * Top-down stepping-stone crossing. A 5-wide x 10-deep grid of wooden
+ * rafts floats on the river. Each row has exactly 2 CRACKED rafts that
+ * give way — the other 3 are safe. Hop up one row at a time, looking
+ * closely to pick a solid raft; step on a cracked one and the pup
+ * splashes into the water. The camera scrolls up as the pup climbs.
+ * Reach the far bank to move on to a fresh crossing.
  */
 const Bridge = (() => {
   const BEST_KEY = 'maeshub.bridge.bestlevel';
+  const COLS = 5, ROWS = 10, LOOSE_PER_ROW = 2;
 
   let area, board, pupEl, riverEl;
   let level = 1;
   let pup = null;
-  let rows = [];          // rows[i] = [{el, loose, x, y}]
-  let endPad = null;
-  let currentRow = -1;    // -1 = start platform
-  let busy = false;       // ignore taps while the pup is mid-hop
+  let rows = [];           // rows[i] = [{el, loose, x, y}]
+  let finishPad = null;
+  let startY = 0, boardH = 0;
+  let currentRow = -1;     // -1 = start bank
+  let busy = false;
   let playing = false;
   let timers = [];
 
@@ -84,7 +87,7 @@ const Bridge = (() => {
     document.getElementById('bridge-best').textContent = Math.max(best, level);
   }
 
-  /* ----- build the bridge ----- */
+  /* ----- build the crossing ----- */
   function newRun() {
     clearTimers();
     updateHud();
@@ -94,62 +97,76 @@ const Bridge = (() => {
     busy = false;
     playing = true;
 
-    const W = area.clientWidth || 900;
-    const H = area.clientHeight || 600;
-    const nRows = Math.min(5 + level, 9);
-    const perRow = level >= 3 ? 3 : 2;
+    const W = area.clientWidth || 380;
+    const side = Math.max(14, W * 0.05);
+    const colSpace = (W - side * 2) / COLS;
+    const tileW = Math.min(colSpace * 0.86, 92);
+    const colX = (j) => side + colSpace * (j + 0.5);
+    const rowSpace = Math.max(tileW * 1.18, 78);
 
-    // the bridge spans the whole river, corner to corner
-    const startX = Math.max(90, W * 0.1);
-    const startY = H - 96;
-    const endX = W - Math.max(110, W * 0.12);
-    const topY = 96;
-    const dx = (endX - startX) / (nRows + 1);
-    const dy = (startY - topY) / (nRows + 1);
-    const pos = (i) => ({ x: startX + (i + 1) * dx, y: startY - (i + 1) * dy });
+    const finishY = 64;
+    const rowY = (i) => finishY + rowSpace * (ROWS - i);  // row 9 nearest finish, row 0 nearest start
+    startY = rowY(0) + rowSpace;
+    boardH = startY + 80;
 
-    // grassy banks at both ends
-    addPad(startX, startY, '🌿');
-    const end = pos(nRows);
-    endPad = addPad(end.x, end.y, '🏡');
+    board.style.height = boardH + 'px';
 
-    // planks lie across the bridge's width, perpendicular to the crossing
-    const len = Math.hypot(dx, dy);
-    const perpX = dy / len, perpY = dx / len;
-    const plankW = Math.max(72, Math.min(112, Math.min(dx, dy) * 1.6));
-    const spacing = plankW * 0.62 + 18;
-    for (let i = 0; i < nRows; i++) {
-      const c = pos(i);
-      const loose = Math.floor(Math.random() * perRow);
-      const rowPlanks = [];
-      for (let j = 0; j < perRow; j++) {
-        const off = (j - (perRow - 1) / 2) * spacing;
-        const x = c.x + perpX * off;
-        const y = c.y + perpY * off;
-        const plank = document.createElement('button');
-        plank.className = 'plank' + (j === loose ? ' cracked' : '');
-        plank.style.width = plankW + 'px';
-        plank.style.left = x + 'px';
-        plank.style.top = y + 'px';
-        const info = { el: plank, loose: j === loose, x, y };
-        plank.addEventListener('click', () => stepOn(i, info));
-        board.appendChild(plank);
-        rowPlanks.push(info);
+    // banks
+    addPad(W / 2, finishY, '🏡', 'finish-pad');
+    finishPad = { x: W / 2, y: finishY };
+    addPad(W / 2, startY, '🌿', 'start-pad');
+
+    // 10 rows x 5 rafts; exactly 2 cracked per row
+    for (let i = 0; i < ROWS; i++) {
+      const loose = pickTwo(COLS);
+      const rowTiles = [];
+      for (let j = 0; j < COLS; j++) {
+        const x = colX(j), y = rowY(i);
+        const isLoose = loose.includes(j);
+        const tile = document.createElement('button');
+        tile.className = 'bridge-tile' + (isLoose ? ' cracked' : '');
+        tile.style.width = tileW + 'px';
+        tile.style.height = (tileW * 0.82) + 'px';
+        tile.style.left = x + 'px';
+        tile.style.top = y + 'px';
+        tile.innerHTML = isLoose ? crackMarks() : plankMarks();
+        const info = { el: tile, loose: isLoose, x, y };
+        tile.addEventListener('click', () => stepOn(i, info));
+        board.appendChild(tile);
+        rowTiles.push(info);
       }
-      rows.push(rowPlanks);
+      rows.push(rowTiles);
     }
 
-    // pup waits on the starting bank
+    // pup waits on the start bank (inside the board so it scrolls with it)
     pupEl.innerHTML = pup.svg;
     pupEl.className = '';
-    movePup(startX, startY);
+    board.appendChild(pupEl);
+    pupEl.style.width = Math.min(tileW * 0.8, 66) + 'px';
+    movePup(W / 2, startY);
     pupEl.classList.remove('hidden');
     markNextRow();
+    scrollTo(startY);
   }
 
-  function addPad(x, y, decor) {
+  function pickTwo(n) {
+    const a = Math.floor(Math.random() * n);
+    let b = Math.floor(Math.random() * n);
+    while (b === a) b = Math.floor(Math.random() * n);
+    return [a, b];
+  }
+
+  // surface detail for a solid raft (top-down planks + rope binding)
+  function plankMarks() {
+    return `<span class="raft-grain"></span>`;
+  }
+  function crackMarks() {
+    return `<span class="raft-grain"></span><span class="raft-crack"></span>`;
+  }
+
+  function addPad(x, y, decor, cls) {
     const pad = document.createElement('div');
-    pad.className = 'bridge-pad';
+    pad.className = 'bridge-pad ' + (cls || '');
     pad.style.left = x + 'px';
     pad.style.top = y + 'px';
     pad.textContent = decor;
@@ -162,80 +179,92 @@ const Bridge = (() => {
     pupEl.style.top = y + 'px';
   }
 
+  // scroll the board so the given board-y sits ~68% down the viewport
+  function scrollTo(focusY) {
+    const Hview = area.clientHeight || 600;
+    let offset = Hview * 0.68 - focusY;
+    offset = Math.min(0, Math.max(Hview - boardH, offset));
+    board.style.transform = `translateY(${offset}px)`;
+  }
+
   function markNextRow() {
+    const nextIdx = currentRow + 1;
     rows.forEach((row, i) => row.forEach((p) =>
-      p.el.classList.toggle('next', i === currentRow + 1 && playing)));
+      p.el.classList.toggle('next', i === nextIdx && playing)));
+    // after the last row, the finish bank lights up
+    const fp = board.querySelector('.finish-pad');
+    if (fp) fp.classList.toggle('next', nextIdx >= ROWS && playing);
   }
 
   /* ----- gameplay ----- */
-  function stepOn(rowIndex, plank) {
+  function stepOn(rowIndex, tile) {
     if (!playing || busy || rowIndex !== currentRow + 1) return;
     busy = true;
     Sound.hop();
     pupEl.classList.add('hopping');
-    movePup(plank.x, plank.y);
+    movePup(tile.x, tile.y);
+    scrollTo(tile.y);
 
     later(() => {
       pupEl.classList.remove('hopping');
-      if (plank.loose) return fall(plank);
+      if (tile.loose) return fall(tile);
       currentRow = rowIndex;
       busy = false;
-      plank.el.classList.add('stood');
-      if (currentRow === rows.length - 1) reachTheEnd();
+      tile.el.classList.add('stood');
+      if (currentRow === ROWS - 1) reachTheEnd();
       else markNextRow();
-    }, 460);
+    }, 420);
   }
 
   function reachTheEnd() {
     busy = true;
+    markNextRow();
     later(() => {
       Sound.hop();
       pupEl.classList.add('hopping');
-      const x = parseFloat(endPad.style.left), y = parseFloat(endPad.style.top);
-      movePup(x, y);
+      movePup(finishPad.x, finishPad.y);
+      scrollTo(finishPad.y);
       later(() => {
         playing = false;
         Sound.fanfare();
-        throwConfetti(140);
+        throwConfetti(150);
         updateHud();
         document.getElementById('bridge-win-text').textContent =
-          `${pup.name} crossed the wobbly bridge on level ${level}! The next bridge is longer…`;
+          `${pup.name} hopped all the way across — 10 rows without a splash! 🏡`;
         document.getElementById('bridge-win-overlay').classList.remove('hidden');
-      }, 500);
-    }, 200);
+      }, 520);
+    }, 220);
   }
 
-  function fall(plank) {
+  function fall(tile) {
     playing = false;
     markNextRow();
-    plank.el.classList.add('gone');
+    tile.el.classList.add('gone');
     Sound.bonk();
 
     later(() => {
-      // the pup tumbles straight down into the water under the bridge
-      pupEl.style.setProperty('--fall', '195px');
       pupEl.classList.add('falling');
       Sound.splash();
-    }, 250);
+    }, 240);
 
     later(() => {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         const s = document.createElement('span');
         s.className = 'river-splash';
         s.textContent = '💦';
-        s.style.left = plank.x + (i - 1.5) * 26 + 'px';
-        s.style.top = plank.y + 165 + 'px';
-        s.style.animationDelay = i * 0.06 + 's';
+        s.style.left = tile.x + (i - 2) * 22 + 'px';
+        s.style.top = tile.y + 'px';
+        s.style.animationDelay = i * 0.05 + 's';
         board.appendChild(s);
         setTimeout(() => s.remove(), 1200);
       }
-    }, 750);
+    }, 600);
 
     later(() => {
       document.getElementById('bridge-fall-text').textContent =
-        `Splash! That plank was loose! ${pup.name} is okay — look for the cracks next time!`;
+        `Splash! That raft was cracked. ${pup.name} is okay — look for the cracked rafts and step around them!`;
       document.getElementById('bridge-fall-overlay').classList.remove('hidden');
-    }, 1500);
+    }, 1450);
   }
 
   return { init, start, stop };
